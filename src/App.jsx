@@ -1,3 +1,4 @@
+// App.jsx
 import React, { useMemo, useState } from "react";
 import "./App.css";
 
@@ -8,10 +9,10 @@ const experience = [
     location: "Austin, TX",
     period: "Sep 2025 to Dec 2025",
     bullets: [
-      "Built production workflows with React plus C# .NET microservices backed by MS SQL.",
-      "Implemented a file import pipeline via a BFF API plus S3 with scanning and async processing.",
-      "Shipped .NET 8 services using DDD plus CQRS with MediatR to reduce coupling and improve maintainability.",
-      "Designed REST APIs for transactional workflows, improving data consistency and responsiveness.",
+      "Developed production-ready Field Appraisal System utilizing React front end, C# .NET with MS SQL microservices, supporting data-driven decision making and internal state workflows.",
+      "Implemented a file import pipeline utilizing Backend for Frontend (BFF) API and Amazon S3, enabling virus scans and asynchronous processing for scalability and reliability.",
+      "Built scalable .NET 8 microservices using domain-driven architecture and CQRS with MediatR, improving maintainability and independent service evolution.",
+      "Implemented RESTful APIs backed by SQL databases to support transactional workflows, improving data consistency and end-user responsiveness through collaborative design and code reviews.",
     ],
     tech: ["React", "C#", ".NET 8", "MS SQL", "AWS S3", "CQRS", "MediatR", "DDD", "BFF"],
   },
@@ -21,8 +22,9 @@ const experience = [
     location: "Remote",
     period: "May 2024 to May 2025",
     bullets: [
-      "Evaluated LLM and generative AI systems for enterprise clients and identified failure cases with structured testing.",
-      "Created evaluation frameworks and delivered performance reports to improve reliability and reduce error patterns.",
+      "Evaluated large language models and generative AI systems for enterprise clients, including Amazon, Apple, and Microsoft, identifying failure cases and improving inference accuracy through structured testing.",
+      "Created advanced training and evaluation frameworks for AI systems used by Meta, Google, and OpenAI, increasing model response quality and reliability.",
+      "Provided data-driven performance reports to AI development teams, cutting overall error rates in models and improving alignment with real-world cases.",
     ],
     tech: ["LLMs", "Evaluation", "Prompting", "Data Analysis", "Testing"],
   },
@@ -32,9 +34,9 @@ const experience = [
     location: "Coppell, TX",
     period: "May 2024 to Aug 2024",
     bullets: [
-      "Optimized workflows by relocating 300+ devices based on performance metrics and increased throughput by 15%.",
-      "Coordinated teams of 20+ to meet daily dispatch targets safely.",
-      "Trained 5+ new hires on SOPs and inventory management with 100% success rate.",
+      "Optimized logistics workflows by relocating 300+ mobile devices based on performance metrics, boosting operational throughput by 15%.",
+      "Met daily dispatch targets and maintained a safe work environment by coordinating cross-functional teams of 20+ employees and management.",
+      "Trained 5+ new hires on standard operating procedures and inventory management with a 100% success rate.",
     ],
     tech: ["Operations", "Coordination", "Training", "Process Improvement"],
   },
@@ -88,16 +90,7 @@ const skillDashboard = {
   ],
 };
 
-const toolbelt = [
-  "VS Code",
-  "Visual Studio",
-  "Git",
-  "Swagger",
-  ".NET CLI",
-  "SSDT",
-  "Postman",
-  "GitHub Copilot",
-];
+const toolbelt = ["VS Code", "Visual Studio", "Git", "Swagger", ".NET CLI", "SSDT", "Postman", "GitHub Copilot"];
 
 function Pill({ children }) {
   return <span className="pill">{children}</span>;
@@ -165,10 +158,9 @@ export default function App() {
         {/* HERO */}
         <section className="hero">
           <div className="heroLeft">
-            <div className="chips">
-              <span className="chip">Dallas</span>
-              <span className="chip">Austin</span>
-              <span className="chip chipAccent">Remote</span>
+            <div className="heroMeta">
+              <span className="heroMetaLabel">Location</span>
+              <span className="heroMetaValue">Dallas, TX · Austin, TX</span>
             </div>
 
             <h1>
@@ -375,11 +367,11 @@ export default function App() {
 
           <div className="card contact">
             <p className="muted">
-              I’m open to engineering opportunities where I can build real
-               systems — from backend and full-stack to infrastructure and applied AI.
+              I’m open to engineering opportunities where I can build real systems across full stack, backend, and
+              applied AI. References are available upon request, just email me and I’ll send them over.
             </p>
             <div className="contactActions">
-              <a className="btnPrimary" href="mailto:prasiddagautam5@gmail.com">
+              <a className="btnPrimary" href="mailto:prasiddagautam5@gmail.com?subject=References%20request">
                 Email Me
               </a>
               <a className="btnGhost" href="https://github.com/prasidda" target="_blank" rel="noopener noreferrer">
