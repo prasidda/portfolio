@@ -54,10 +54,6 @@ npm run dev
 npm run build
 ```
 
-## Notes for Recruiters
-
-This portfolio was created as part of my CS journey and demonstrates my skills in modern front-end development. I'm open to internships or entry-level roles where I can contribute to real products and continue learning.
-
 ## Contact
 
 Feel free to connect with me through the contact information included on the site.
