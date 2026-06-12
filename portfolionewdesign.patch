@@ -1,0 +1,3830 @@
+From 35dc1456829a68b9c02943d9a3af30d3be1157e0 Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Fri, 12 Jun 2026 05:19:13 +0000
+Subject: [PATCH 1/2] Redesign portfolio and move all content into src/data.js
+
+- Extract all site content (profile, experience, projects, skills,
+  education) into src/data.js so updates never touch component code;
+  includes a ready-to-fill template for the IBM internship entry
+- Refine the visual design: experience timeline instead of accordion,
+  grouped skill tags instead of percentage bars, single copper accent,
+  remove terminal widget / stat boxes / glow blobs / decorative glyphs
+- Fix broken body font (Satoshi isn't on Google Fonts) by switching
+  to Inter; keep DM Serif Display for headings
+- Respect prefers-reduced-motion; improve page title and meta
+- Rewrite README with a step-by-step content update guide
+
+https://claude.ai/code/session_01Aw6Qai5C6BaBGfUUgpPsPg
+---
+ README.md     |  41 ++-
+ index.html    |   3 +-
+ src/App.css   | 969 +++++++++++++++-----------------------------------
+ src/App.jsx   | 716 ++++++++++++-------------------------
+ src/data.js   | 163 +++++++++
+ src/index.css |  18 +-
+ 6 files changed, 724 insertions(+), 1186 deletions(-)
+ create mode 100644 src/data.js
+
+diff --git a/README.md b/README.md
+index 18bc70e..b5e57da 100644
+--- a/README.md
++++ b/README.md
+@@ -1,16 +1,39 @@
+-# React + Vite
++# Prasidda Gautam — Portfolio
+ 
+-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
++Personal portfolio built with React + Vite.
+ 
+-Currently, two official plugins are available:
++## How to update the site
+ 
+-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
+-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
++**All content lives in one file: [`src/data.js`](src/data.js).**
++You never need to touch `App.jsx` or `App.css` to update your info.
+ 
+-## React Compiler
++| What you want to change | Where in `src/data.js` |
++|---|---|
++| Status pill, headline, intro paragraph, links | `profile` |
++| Jobs / internships (e.g. IBM) | `experience` |
++| Projects | `projects` |
++| Skill tags | `skills` |
++| GPA, coursework | `education` |
+ 
+-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
++### Adding the IBM internship
+ 
+-## Expanding the ESLint configuration
++Open `src/data.js` — there's a ready-to-fill commented template right above the
++`experience` array. Copy it to the **top** of the array (newest first), remove the
++`//` markers, and fill in your title, dates, location, and bullets. Done.
+ 
+-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
++While you're there, consider updating `profile.status` (the pill at the top of
++the page) to something like `"Software Engineer Intern @ IBM"`.
++
++### Updating the resume
++
++Replace `public/Prasidda_Gautam_Resume.pdf` with the new PDF (keep the same
++filename, or update `profile.resume` in `src/data.js` to match).
++
++## Development
++
++```bash
++npm install     # first time only
++npm run dev     # local dev server with hot reload
++npm run build   # production build (outputs to dist/)
++npm run lint    # check for code issues
++```
+diff --git a/index.html b/index.html
+index b981b52..caa0fea 100644
+--- a/index.html
++++ b/index.html
+@@ -5,7 +5,8 @@
+     <link rel="shortcut icon" href="/logo.png" type="image/png" />
+     <link rel="icon" href="/logo.png" type="image/png" />
+     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+-    <title>prasidda-portfolio</title>
++    <meta name="description" content="Prasidda Gautam — Software Developer. CS at UT Austin, building full-stack systems and microservices." />
++    <title>Prasidda Gautam · Software Developer</title>
+   </head>
+   <body>
+     <div id="root"></div>
+diff --git a/src/App.css b/src/App.css
+index d4229e3..d23378a 100644
+--- a/src/App.css
++++ b/src/App.css
+@@ -1,42 +1,26 @@
+-/* App.css — Editorial Geometric Portfolio */
+-
+-@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Satoshi:wght@400;500;700;900&display=swap');
++/* App.css — refined editorial dark theme */
+ 
+ :root {
+-  --bg: #0a0a0f;
+-  --surface: rgba(255,255,255,0.035);
+-  --surface2: rgba(255,255,255,0.055);
+-  --border: rgba(255,255,255,0.08);
+-  --border2: rgba(255,255,255,0.12);
+-
+-  --text: #ece8e1;
+-  --muted: rgba(236,232,225,0.58);
+-  --dim: rgba(236,232,225,0.35);
++  --bg: #0d0d11;
++  --surface: rgba(255, 255, 255, 0.03);
++  --surface2: rgba(255, 255, 255, 0.06);
++  --border: rgba(255, 255, 255, 0.09);
++  --border2: rgba(255, 255, 255, 0.16);
+ 
+-  /* Warm copper + sage palette */
+-  --copper: #c9956b;
+-  --copper-light: #e4b78a;
+-  --sage: #7ea88a;
+-  --sage-light: #a3c9ae;
++  --text: #ebe9e4;
++  --muted: rgba(235, 233, 228, 0.62);
++  --dim: rgba(235, 233, 228, 0.38);
+ 
+-  --accent-gradient: linear-gradient(135deg, var(--copper), var(--sage));
+-  --shadow: 0 24px 80px rgba(0,0,0,0.5);
+-  --radius: 16px;
+-  --radius-sm: 10px;
++  --accent: #cf9a6c;
++  --accent-light: #e3b98e;
++  --accent-soft: rgba(207, 154, 108, 0.12);
++  --accent-border: rgba(207, 154, 108, 0.28);
+ 
+-  --font-display: 'DM Serif Display', Georgia, serif;
+-  --font-body: 'Satoshi', -apple-system, sans-serif;
+-}
++  --radius: 14px;
++  --radius-sm: 9px;
+ 
+-/* ── Reveal animations ── */
+-.reveal {
+-  opacity: 0;
+-  transform: translateY(28px);
+-  transition: opacity 0.7s cubic-bezier(.22,1,.36,1), transform 0.7s cubic-bezier(.22,1,.36,1);
+-}
+-.reveal.revealed {
+-  opacity: 1;
+-  transform: translateY(0);
++  --font-display: "DM Serif Display", Georgia, serif;
++  --font-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+ }
+ 
+ /* ── Base ── */
+@@ -45,42 +29,31 @@
+   background: var(--bg);
+   color: var(--text);
+   font-family: var(--font-body);
+-  overflow-x: hidden;
+-  position: relative;
+ }
+ 
+-/* Subtle grid texture overlay */
+-.gridOverlay {
+-  position: fixed;
+-  inset: 0;
+-  pointer-events: none;
+-  z-index: 0;
+-  background-image:
+-    linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
+-    linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px);
+-  background-size: 80px 80px;
+-  mask-image: radial-gradient(ellipse 80% 60% at 50% 30%, black 20%, transparent 70%);
+-}
+-
+-/* Ambient glow blobs */
+-.app::before,
+-.app::after {
+-  content: '';
+-  position: fixed;
+-  border-radius: 50%;
+-  pointer-events: none;
+-  z-index: 0;
+-  filter: blur(120px);
++.container {
++  max-width: 980px;
++  margin: 0 auto;
++  padding: 0 24px 80px;
++}
++
++/* ── Reveal animation ── */
++.reveal {
++  opacity: 0;
++  transform: translateY(20px);
++  transition: opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1),
++    transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+ }
+-.app::before {
+-  width: 700px; height: 700px;
+-  top: -200px; left: -100px;
+-  background: radial-gradient(circle, rgba(201,149,107,0.1), transparent 70%);
++.reveal.revealed {
++  opacity: 1;
++  transform: translateY(0);
+ }
+-.app::after {
+-  width: 600px; height: 600px;
+-  bottom: 10%; right: -100px;
+-  background: radial-gradient(circle, rgba(126,168,138,0.08), transparent 70%);
++@media (prefers-reduced-motion: reduce) {
++  .reveal {
++    opacity: 1;
++    transform: none;
++    transition: none;
++  }
+ }
+ 
+ /* ── Nav ── */
+@@ -88,665 +61,365 @@
+   position: sticky;
+   top: 0;
+   z-index: 100;
+-  background: rgba(10,10,15,0.6);
+-  backdrop-filter: blur(16px) saturate(1.4);
++  background: rgba(13, 13, 17, 0.75);
++  backdrop-filter: blur(14px);
+   border-bottom: 1px solid transparent;
+   transition: border-color 0.3s, background 0.3s;
+ }
+ .navScrolled {
+   border-bottom-color: var(--border);
+-  background: rgba(10,10,15,0.88);
++  background: rgba(13, 13, 17, 0.92);
+ }
+ .navInner {
+-  max-width: 1140px;
++  max-width: 980px;
+   margin: 0 auto;
+   padding: 14px 24px;
+   display: flex;
+   justify-content: space-between;
+   align-items: center;
++  gap: 16px;
++  flex-wrap: wrap;
+ }
+ 
+ .brand {
+   display: flex;
+-  align-items: center;
+-  gap: 12px;
++  flex-direction: column;
++  line-height: 1.2;
+   text-decoration: none;
+   color: var(--text);
+ }
+-.brandMark {
+-  width: 36px; height: 36px;
+-  border-radius: 10px;
+-  display: grid;
+-  place-items: center;
+-  background: var(--accent-gradient);
+-  box-shadow: 0 8px 24px rgba(201,149,107,0.25);
+-  flex-shrink: 0;
+-}
+-.brandText {
+-  display: flex;
+-  flex-direction: column;
+-  line-height: 1.15;
+-}
+ .brandName {
+-  font-weight: 900;
+-  font-size: 0.95rem;
+-  letter-spacing: -0.01em;
++  font-family: var(--font-display);
++  font-size: 1.05rem;
++  letter-spacing: 0.01em;
+ }
+ .brandSub {
+-  font-size: 0.78rem;
++  font-size: 0.74rem;
+   color: var(--muted);
+-  margin-top: 2px;
++  margin-top: 1px;
+ }
+ 
+ .navLinks {
+   display: flex;
+   align-items: center;
+-  gap: 4px;
++  gap: 2px;
++  flex-wrap: wrap;
+ }
+ .navLinks a {
+   color: var(--muted);
+   text-decoration: none;
+-  font-weight: 700;
+-  font-size: 0.85rem;
+-  padding: 7px 14px;
+-  border-radius: 8px;
+-  transition: all 0.2s;
+-  position: relative;
++  font-weight: 500;
++  font-size: 0.86rem;
++  padding: 6px 12px;
++  border-radius: 7px;
++  transition: color 0.2s, background 0.2s;
+ }
+ .navLinks a:hover {
+   color: var(--text);
+-  background: rgba(255,255,255,0.04);
++  background: var(--surface2);
+ }
+ .navLinks a.navActive {
+-  color: var(--text);
+-  background: rgba(255,255,255,0.06);
+-}
+-.navLinks a.navActive::after {
+-  content: '';
+-  position: absolute;
+-  bottom: 2px;
+-  left: 50%;
+-  transform: translateX(-50%);
+-  width: 4px; height: 4px;
+-  border-radius: 50%;
+-  background: var(--copper);
++  color: var(--accent-light);
+ }
+ 
+-@media (max-width: 900px) {
+-  .navLinks { display: none; }
++@media (max-width: 640px) {
++  .navInner {
++    justify-content: center;
++    text-align: center;
++  }
++  .brand {
++    align-items: center;
++  }
+ }
+ 
+-/* ── Container ── */
+-.container {
+-  position: relative;
+-  z-index: 1;
+-  max-width: 1140px;
+-  margin: 0 auto;
+-  padding: 40px 24px 80px;
++/* ── Section headings ── */
++.section {
++  margin-top: 96px;
+ }
+-
+-/* ── Section Labels ── */
+-.section { margin-top: 88px; }
+-
+ .sectionLabel {
+   display: flex;
+   align-items: center;
+   gap: 14px;
+-  margin-bottom: 28px;
++  margin-bottom: 32px;
+ }
+ .sectionNum {
+   font-family: var(--font-display);
+-  font-size: 0.85rem;
+-  color: var(--copper);
+-  opacity: 0.7;
+   font-style: italic;
++  font-size: 0.9rem;
++  color: var(--accent);
+ }
+ .sectionLabel h2 {
+   margin: 0;
+   font-family: var(--font-display);
+-  font-size: 1.8rem;
++  font-size: 1.7rem;
+   font-weight: 400;
+-  letter-spacing: -0.01em;
+-}
+-
+-/* ── HERO ── */
+-.hero {
+-  display: grid;
+-  grid-template-columns: 1.3fr 1fr;
+-  gap: 20px;
+-  align-items: start;
+-  margin-top: 10px;
++  letter-spacing: 0.005em;
+ }
+-@media (max-width: 960px) {
+-  .hero { grid-template-columns: 1fr; }
++.sectionRule {
++  flex: 1;
++  height: 1px;
++  background: var(--border);
+ }
+ 
+-.heroLeft {
+-  border: 1px solid var(--border);
+-  background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.015));
+-  border-radius: var(--radius);
+-  padding: 32px 28px 28px;
+-  box-shadow: var(--shadow);
+-  position: relative;
+-  overflow: hidden;
+-}
+-/* Decorative corner accent */
+-.heroLeft::before {
+-  content: '';
+-  position: absolute;
+-  top: -1px; right: -1px;
+-  width: 100px; height: 100px;
+-  background: var(--accent-gradient);
+-  opacity: 0.06;
+-  border-radius: 0 var(--radius) 0 100%;
++/* ── Hero ── */
++.hero {
++  padding-top: 96px;
+ }
+ 
+-.heroEyebrow {
++.heroStatus {
+   display: inline-flex;
+   align-items: center;
+   gap: 8px;
+   font-size: 0.82rem;
+-  font-weight: 700;
+-  color: var(--sage-light);
+-  margin-bottom: 20px;
+-  padding: 6px 14px 6px 10px;
++  font-weight: 500;
++  color: var(--accent-light);
++  padding: 6px 14px 6px 11px;
+   border-radius: 999px;
+-  border: 1px solid rgba(126,168,138,0.2);
+-  background: rgba(126,168,138,0.06);
+-  animation: fadeSlideIn 0.6s ease-out both;
++  border: 1px solid var(--accent-border);
++  background: var(--accent-soft);
+ }
+-.eyebrowDot {
+-  width: 7px; height: 7px;
++.statusDot {
++  width: 6px;
++  height: 6px;
+   border-radius: 50%;
+-  background: var(--sage);
+-  animation: pulse 2s ease-in-out infinite;
+-}
+-@keyframes pulse {
+-  0%, 100% { opacity: 1; }
+-  50% { opacity: 0.4; }
++  background: var(--accent);
+ }
+ 
+ .heroTitle {
+-  margin: 0;
++  margin: 26px 0 0;
+   font-family: var(--font-display);
+-  font-size: clamp(2.4rem, 4.5vw, 3.6rem);
+-  line-height: 1.08;
+-  letter-spacing: -0.02em;
+   font-weight: 400;
++  font-size: clamp(2.3rem, 5.5vw, 3.7rem);
++  line-height: 1.12;
++  letter-spacing: -0.01em;
+ }
+-.heroLine {
+-  display: block;
+-}
+-.heroLine1 { animation: fadeSlideIn 0.6s ease-out 0.1s both; }
+-.heroLine2 { animation: fadeSlideIn 0.6s ease-out 0.2s both; }
+-.heroLine3 { animation: fadeSlideIn 0.6s ease-out 0.3s both; }
+-
+-@keyframes fadeSlideIn {
+-  from { opacity: 0; transform: translateY(16px); }
+-  to { opacity: 1; transform: translateY(0); }
+-}
+-
+ .heroAccent {
+-  background: var(--accent-gradient);
+-  -webkit-background-clip: text;
+-  -webkit-text-fill-color: transparent;
+-  background-clip: text;
++  color: var(--accent-light);
+ }
+ 
+ .lead {
+-  margin: 18px 0 0;
++  margin: 22px 0 0;
+   color: var(--muted);
+-  line-height: 1.7;
+-  max-width: 56ch;
+-  font-size: 1.02rem;
+-  animation: fadeSlideIn 0.6s ease-out 0.4s both;
++  line-height: 1.75;
++  max-width: 62ch;
++  font-size: 1.04rem;
+ }
+ 
+ .heroActions {
+   display: flex;
+   gap: 10px;
+   flex-wrap: wrap;
+-  margin-top: 24px;
+-  animation: fadeSlideIn 0.6s ease-out 0.5s both;
++  margin-top: 30px;
++}
++
++.heroMeta {
++  margin: 22px 0 0;
++  font-size: 0.85rem;
++  color: var(--dim);
+ }
+ 
+-.btnPrimary, .btnGhost {
++/* ── Buttons ── */
++.btnPrimary,
++.btnGhost {
+   text-decoration: none;
+-  border-radius: 10px;
+-  padding: 10px 18px;
+-  font-weight: 800;
++  border-radius: 9px;
++  padding: 10px 20px;
++  font-weight: 600;
+   font-size: 0.88rem;
+-  border: 1px solid var(--border);
++  line-height: 1;
+   display: inline-flex;
+   align-items: center;
+   gap: 6px;
+-  line-height: 1;
+-  transition: all 0.25s ease;
+-  font-family: var(--font-body);
++  transition: background 0.2s, color 0.2s, border-color 0.2s, transform 0.2s;
+ }
+ .btnPrimary {
+-  background: var(--accent-gradient);
+-  color: #0a0a0f;
+-  border-color: transparent;
+-  box-shadow: 0 8px 28px rgba(201,149,107,0.3);
++  background: var(--accent);
++  color: #15110c;
++  border: 1px solid transparent;
+ }
+ .btnPrimary:hover {
+-  box-shadow: 0 12px 36px rgba(201,149,107,0.4);
++  background: var(--accent-light);
+   transform: translateY(-1px);
+ }
+ .btnGhost {
+-  background: rgba(255,255,255,0.03);
+-  color: rgba(236,232,225,0.8);
++  background: transparent;
++  color: var(--muted);
++  border: 1px solid var(--border);
+ }
+ .btnGhost:hover {
+-  background: rgba(255,255,255,0.07);
+   color: var(--text);
++  border-color: var(--border2);
+   transform: translateY(-1px);
+ }
+ 
+-.heroStats {
+-  margin-top: 24px;
+-  display: grid;
+-  grid-template-columns: repeat(4, 1fr);
+-  gap: 10px;
+-}
+-@media (max-width: 720px) {
+-  .heroStats { grid-template-columns: repeat(2, 1fr); }
+-}
+-
+-.stat {
++/* ── Cards ── */
++.card {
+   border: 1px solid var(--border);
+   background: var(--surface);
+-  border-radius: var(--radius-sm);
+-  padding: 14px;
+-  text-align: center;
+-  animation: fadeSlideIn 0.5s ease-out both;
+-  transition: border-color 0.3s, transform 0.3s;
++  border-radius: var(--radius);
++  padding: 24px;
++  transition: border-color 0.3s;
+ }
+-.stat:hover {
++.card:hover {
+   border-color: var(--border2);
+-  transform: translateY(-2px);
+-}
+-.statIcon {
+-  font-size: 0.75rem;
+-  color: var(--copper);
+-  margin-bottom: 6px;
+-  opacity: 0.7;
+-}
+-.statK {
+-  font-weight: 900;
+-  font-size: 1.15rem;
+-  letter-spacing: -0.02em;
+-}
+-.statV {
+-  margin-top: 4px;
+-  font-size: 0.78rem;
+-  color: var(--muted);
+-  line-height: 1.3;
+ }
+-
+-/* ── Hero Right ── */
+-.heroRight {
+-  display: flex;
+-  flex-direction: column;
+-  gap: 12px;
++.card h3 {
++  margin: 0;
++  font-family: var(--font-display);
++  font-weight: 400;
++  font-size: 1.2rem;
+ }
+ 
+-.terminal {
+-  border: 1px solid var(--border);
+-  background: linear-gradient(180deg, rgba(14,14,22,0.9), rgba(14,14,22,0.6));
+-  border-radius: var(--radius);
+-  box-shadow: var(--shadow);
+-  overflow: hidden;
+-  animation: fadeSlideIn 0.6s ease-out 0.3s both;
+-}
+-.termTop {
+-  display: flex;
+-  gap: 7px;
+-  padding: 11px 14px;
+-  border-bottom: 1px solid var(--border);
+-  align-items: center;
++/* ── Shared list / pill styles ── */
++.bullets {
++  margin: 14px 0 0;
++  padding-left: 18px;
++  color: var(--muted);
++  line-height: 1.65;
+ }
+-.termTop span:not(.termTitle) {
+-  width: 10px; height: 10px;
+-  border-radius: 50%;
++.bullets li {
++  margin: 6px 0;
++  font-size: 0.92rem;
+ }
+-.termTop span:nth-child(1) { background: rgba(255,99,99,0.5); }
+-.termTop span:nth-child(2) { background: rgba(255,201,71,0.5); }
+-.termTop span:nth-child(3) { background: rgba(126,168,138,0.5); }
+-.termTitle {
+-  margin-left: auto;
+-  font-size: 0.75rem;
+-  color: var(--dim);
+-  font-weight: 600;
++.bullets li::marker {
++  color: var(--accent);
+ }
+ 
+-.termBody {
+-  padding: 16px 18px 18px;
+-  font-family: 'SF Mono', 'Fira Code', ui-monospace, monospace;
+-  font-size: 0.84rem;
+-  color: rgba(236,232,225,0.8);
+-  line-height: 1.7;
+-}
+-.tline {
+-  margin: 4px 0;
++.pills {
+   display: flex;
+-  gap: 8px;
+-  align-items: baseline;
+-}
+-.prompt {
+-  color: var(--copper);
+-  font-weight: 700;
+-  flex-shrink: 0;
+-}
+-.tkey {
+-  color: var(--dim);
+-  min-width: 48px;
+-  flex-shrink: 0;
+-}
+-.tstrong {
+-  font-weight: 700;
+-  color: rgba(236,232,225,0.9);
+-}
+-.cursorBlink::after {
+-  content: '▊';
+-  animation: blink 1s step-end infinite;
+-  color: var(--copper);
+-  margin-left: 1px;
+-}
+-@keyframes blink {
+-  0%, 100% { opacity: 1; }
+-  50% { opacity: 0; }
++  flex-wrap: wrap;
++  gap: 6px;
++  margin-top: 14px;
+ }
+-
+-.locationCard {
+-  display: flex;
+-  align-items: center;
+-  gap: 12px;
++.pill {
++  font-size: 0.76rem;
++  padding: 5px 11px;
++  border-radius: 999px;
+   border: 1px solid var(--border);
+   background: var(--surface);
+-  border-radius: var(--radius-sm);
+-  padding: 14px 16px;
+-  animation: fadeSlideIn 0.6s ease-out 0.45s both;
++  color: var(--muted);
++  line-height: 1;
++  font-weight: 500;
++  transition: border-color 0.2s, color 0.2s;
+ }
+-.locationIcon {
+-  color: var(--copper);
+-  flex-shrink: 0;
+-  opacity: 0.8;
++.pill:hover {
++  border-color: var(--accent-border);
++  color: var(--text);
+ }
+-.locationText {
++
++/* ── Experience timeline ── */
++.timeline {
++  position: relative;
+   display: flex;
+   flex-direction: column;
+-  gap: 2px;
+-}
+-.locationCity {
+-  font-weight: 800;
+-  font-size: 0.9rem;
+-}
+-.locationNote {
+-  font-size: 0.78rem;
+-  color: var(--muted);
++  gap: 36px;
++  padding-left: 4px;
+ }
+ 
+-.miniNote {
++.timelineItem {
++  position: relative;
+   display: flex;
+-  gap: 12px;
+-  align-items: flex-start;
+-  border: 1px solid var(--border);
+-  background: var(--surface);
+-  border-radius: var(--radius-sm);
+-  padding: 14px 16px;
+-  animation: fadeSlideIn 0.6s ease-out 0.55s both;
++  gap: 22px;
+ }
+-.miniNoteIcon {
+-  color: var(--copper);
+-  font-size: 1rem;
++.timelineMarker {
++  position: relative;
+   flex-shrink: 0;
+-  margin-top: 1px;
+-}
+-.miniNoteTitle { font-weight: 800; font-size: 0.9rem; }
+-.miniNoteBody { margin-top: 4px; color: var(--muted); line-height: 1.55; font-size: 0.88rem; }
+-
+-/* ── Cards ── */
+-.card {
+-  border: 1px solid var(--border);
+-  background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.015));
+-  border-radius: var(--radius);
+-  padding: 22px;
+-  box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+-  transition: border-color 0.3s, transform 0.3s;
+-}
+-.card:hover {
+-  border-color: var(--border2);
++  width: 11px;
++  margin-top: 8px;
+ }
+-.card h3 {
+-  margin: 0 0 10px;
+-  font-family: var(--font-display);
+-  font-weight: 400;
+-  font-size: 1.25rem;
++.timelineMarker::before {
++  content: "";
++  position: absolute;
++  top: 0;
++  left: 0;
++  width: 11px;
++  height: 11px;
++  border-radius: 50%;
++  border: 2px solid var(--accent);
++  background: var(--bg);
+ }
+-.card p {
+-  color: var(--muted);
+-  line-height: 1.7;
+-  margin: 8px 0 0;
++.timelineMarker::after {
++  content: "";
++  position: absolute;
++  top: 18px;
++  bottom: -44px;
++  left: 5px;
++  width: 1px;
++  background: var(--border);
+ }
+-.card ul {
+-  margin: 10px 0 0;
+-  padding-left: 16px;
+-  color: rgba(236,232,225,0.72);
+-  line-height: 1.65;
++.timelineItem:last-child .timelineMarker::after {
++  display: none;
+ }
+-.card li { margin: 5px 0; font-size: 0.92rem; }
+ 
+-/* ── About Grid ── */
+-.aboutGrid {
+-  display: grid;
+-  grid-template-columns: repeat(3, 1fr);
+-  gap: 14px;
+-}
+-@media (max-width: 900px) {
+-  .aboutGrid { grid-template-columns: 1fr; }
+-}
+-.cardAbout {
+-  position: relative;
++.timelineContent {
++  flex: 1;
++  min-width: 0;
++  padding-bottom: 4px;
+ }
+-.cardAbout:hover {
+-  transform: translateY(-3px);
+-}
+-.cardIcon {
+-  font-size: 1.4rem;
+-  color: var(--copper);
+-  margin-bottom: 12px;
+-  opacity: 0.6;
+-}
+-
+-/* ── Experience ── */
+-.xpList { display: flex; flex-direction: column; gap: 10px; }
+ 
+-.xpItem {
+-  border: 1px solid var(--border);
+-  background: var(--surface);
+-  border-radius: var(--radius);
+-  overflow: hidden;
+-  transition: border-color 0.3s;
+-}
+-.xpItem:hover {
+-  border-color: var(--border2);
+-}
+ .xpHead {
+-  width: 100%;
+-  border: 0;
+-  background: transparent;
+-  padding: 18px 20px;
+-  cursor: pointer;
+   display: flex;
+   justify-content: space-between;
+-  align-items: center;
++  align-items: baseline;
+   gap: 16px;
+-  text-align: left;
+-  color: var(--text);
+-  font-family: var(--font-body);
+-  transition: background 0.2s;
++  flex-wrap: wrap;
+ }
+-.xpHead:hover { background: rgba(255,255,255,0.02); }
+-
+-.xpMain { min-width: 0; }
+ .xpRole {
+-  font-weight: 900;
+-  font-size: 1.02rem;
++  margin: 0;
++  font-family: var(--font-display);
++  font-weight: 400;
++  font-size: 1.22rem;
+ }
+ .xpCompany {
+   margin-top: 4px;
+-  color: var(--muted);
+-  font-weight: 600;
+-  font-size: 0.9rem;
+-}
+-
+-.xpSide {
+-  display: flex;
+-  align-items: center;
+-  gap: 16px;
+-  flex-shrink: 0;
++  color: var(--accent-light);
++  font-weight: 500;
++  font-size: 0.92rem;
+ }
+ .xpMeta {
+-  font-size: 0.82rem;
+-  color: var(--muted);
+-  white-space: nowrap;
+-}
+-.xpToggle {
+-  width: 28px; height: 28px;
+-  display: grid;
+-  place-items: center;
+-  border-radius: 8px;
+-  border: 1px solid var(--border);
+-  background: var(--surface);
+-  color: var(--muted);
+-  transition: all 0.3s;
+-}
+-.xpItem.open .xpToggle {
+-  background: rgba(201,149,107,0.1);
+-  border-color: rgba(201,149,107,0.2);
+-  color: var(--copper);
+-}
+-
+-.xpBody {
+-  max-height: 0;
+-  overflow: hidden;
+-  padding: 0 20px;
+-  transition: max-height 0.35s cubic-bezier(.22,1,.36,1), padding 0.35s ease;
+-}
+-.xpItem.open .xpBody {
+-  max-height: 600px;
+-  padding: 0 20px 20px;
+-}
+-.xpBody ul {
+-  padding-left: 16px;
+-  color: rgba(236,232,225,0.72);
+-  line-height: 1.65;
+-}
+-.xpBody li { margin: 6px 0; font-size: 0.9rem; }
+-
+-@media (max-width: 700px) {
+-  .xpSide { flex-direction: column; align-items: flex-end; gap: 4px; }
+-}
+-
+-/* ── Education ── */
+-.eduCard {
+-  padding: 24px 26px;
+-}
+-.eduTop {
+-  display: flex;
+-  justify-content: space-between;
+-  align-items: flex-start;
+-  gap: 20px;
+-  flex-wrap: wrap;
+-}
+-.eduMain h3 {
+-  margin: 0 0 4px;
+-  font-size: 1.3rem;
+-}
+-.eduDegree {
+-  color: var(--muted) !important;
+-  margin: 0 !important;
+-  font-size: 0.95rem;
+-}
+-.eduSide {
+   display: flex;
+   flex-direction: column;
+   align-items: flex-end;
+-  gap: 6px;
+-  flex-shrink: 0;
+-}
+-.eduDate {
+-  font-size: 0.84rem;
+-  color: var(--muted);
+-  font-weight: 600;
+-}
+-.eduGpa {
+-  font-weight: 900;
+-  font-size: 0.88rem;
+-  color: var(--copper-light);
+-  padding: 4px 12px;
+-  border-radius: 6px;
+-  border: 1px solid rgba(201,149,107,0.2);
+-  background: rgba(201,149,107,0.06);
+-}
+-.eduCourses {
+-  margin-top: 18px;
+-  padding-top: 16px;
+-  border-top: 1px solid var(--border);
+-}
+-.eduCoursesLabel {
+-  display: block;
+-  font-size: 0.78rem;
+-  font-weight: 700;
++  gap: 2px;
++  font-size: 0.82rem;
+   color: var(--dim);
+-  text-transform: uppercase;
+-  letter-spacing: 0.08em;
+-  margin-bottom: 10px;
++  white-space: nowrap;
++}
++@media (max-width: 600px) {
++  .xpMeta {
++    align-items: flex-start;
++    flex-direction: row;
++    gap: 12px;
++  }
+ }
+ 
+ /* ── Projects ── */
+ .projGrid {
+   display: grid;
+-  grid-template-columns: repeat(3, 1fr);
+-  gap: 14px;
+-}
+-@media (max-width: 1060px) {
+-  .projGrid { grid-template-columns: 1fr 1fr; }
+-}
+-@media (max-width: 700px) {
+-  .projGrid { grid-template-columns: 1fr; }
++  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
++  gap: 16px;
+ }
+ 
+-.cardProj {
++.projCard {
+   display: flex;
+   flex-direction: column;
+-  position: relative;
+-}
+-.cardProj:hover {
+-  transform: translateY(-3px);
+ }
+ .projTop {
+   display: flex;
+   justify-content: space-between;
+-  align-items: center;
++  align-items: baseline;
+   gap: 12px;
+ }
+-.projTop h3 { margin: 0; }
+ .projDate {
+-  font-size: 0.82rem;
+-  color: var(--muted);
+-  font-weight: 700;
++  font-size: 0.78rem;
++  color: var(--dim);
+   white-space: nowrap;
+-  padding: 4px 10px;
+-  border-radius: 999px;
+-  border: 1px solid var(--border);
+-  background: var(--surface);
+ }
+ .projDesc {
+-  color: var(--muted) !important;
++  margin: 12px 0 0;
++  color: var(--muted);
+   font-size: 0.92rem;
++  line-height: 1.65;
+ }
+ .projBottom {
+   display: flex;
+@@ -754,185 +427,133 @@
+   align-items: flex-end;
+   gap: 12px;
+   margin-top: auto;
+-  padding-top: 8px;
++  padding-top: 10px;
+ }
+ .projLink {
+-  color: var(--copper-light);
++  color: var(--accent-light);
+   text-decoration: none;
+-  font-weight: 700;
++  font-weight: 600;
+   font-size: 0.85rem;
+   white-space: nowrap;
+   transition: color 0.2s;
+-  flex-shrink: 0;
+-}
+-.projLink:hover { color: var(--text); }
+-
+-/* ── Pills ── */
+-.pills {
+-  display: flex;
+-  flex-wrap: wrap;
+-  gap: 6px;
+-  margin-top: 12px;
+-}
+-.pill {
+-  font-size: 0.75rem;
+-  padding: 5px 10px;
+-  border-radius: 6px;
+-  border: 1px solid var(--border);
+-  background: var(--surface);
+-  color: rgba(236,232,225,0.7);
+-  line-height: 1;
+-  font-weight: 600;
+-  transition: border-color 0.2s;
+ }
+-.pill:hover {
+-  border-color: var(--border2);
++.projLink:hover {
+   color: var(--text);
+ }
+ 
+-/* ── Skills Dashboard ── */
+-.skillsDash {
++/* ── Skills ── */
++.skillsGrid {
+   display: grid;
+-  grid-template-columns: repeat(3, 1fr);
+-  gap: 14px;
+-}
+-@media (max-width: 960px) {
+-  .skillsDash { grid-template-columns: 1fr; }
++  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
++  gap: 16px;
+ }
+-
+-.cardSkill h3 {
++.skillCard h3 {
+   font-size: 1.05rem;
+ }
+-.skillsHead {
++
++/* ── Education ── */
++.eduTop {
+   display: flex;
+   justify-content: space-between;
+-  align-items: center;
+-  gap: 10px;
+-  margin-bottom: 16px;
++  align-items: flex-start;
++  gap: 20px;
++  flex-wrap: wrap;
+ }
+-.skillsHint {
+-  font-size: 0.72rem;
+-  color: var(--dim);
+-  border: 1px solid var(--border);
+-  padding: 4px 9px;
+-  border-radius: 6px;
+-  background: var(--surface);
+-  font-weight: 600;
+-  text-transform: uppercase;
+-  letter-spacing: 0.06em;
++.eduDegree {
++  margin: 6px 0 0;
++  color: var(--muted);
++  font-size: 0.94rem;
+ }
+-
+-.skillsRows { display: flex; flex-direction: column; gap: 14px; }
+-.skillRow { display: flex; flex-direction: column; gap: 7px; }
+-.skillMeta {
++.eduSide {
+   display: flex;
+-  justify-content: space-between;
+-  align-items: center;
+-  gap: 10px;
++  flex-direction: column;
++  align-items: flex-end;
++  gap: 8px;
++  flex-shrink: 0;
+ }
+-.skillName { font-weight: 800; font-size: 0.9rem; }
+-.skillSignal {
+-  font-size: 0.76rem;
++.eduDate {
++  font-size: 0.84rem;
+   color: var(--dim);
+-  font-weight: 600;
+-  padding: 3px 8px;
+-  border-radius: 5px;
+-  background: var(--surface);
+-  border: 1px solid var(--border);
+ }
+-
+-.bar {
+-  height: 6px;
+-  border-radius: 999px;
+-  background: rgba(255,255,255,0.04);
+-  border: 1px solid rgba(255,255,255,0.06);
+-  overflow: hidden;
++.eduGpa {
++  font-weight: 600;
++  font-size: 0.84rem;
++  color: var(--accent-light);
++  padding: 4px 12px;
++  border-radius: 6px;
++  border: 1px solid var(--accent-border);
++  background: var(--accent-soft);
+ }
+-.barFill {
+-  height: 100%;
+-  border-radius: 999px;
+-  background: var(--accent-gradient);
+-  box-shadow: 0 0 12px rgba(201,149,107,0.2);
++.eduCourses {
++  margin-top: 20px;
++  padding-top: 18px;
++  border-top: 1px solid var(--border);
+ }
+-
+-/* ── Toolbelt ── */
+-.toolbelt {
+-  margin-top: 14px;
++.eduCoursesLabel {
++  display: block;
++  font-size: 0.74rem;
++  font-weight: 600;
++  color: var(--dim);
++  text-transform: uppercase;
++  letter-spacing: 0.09em;
+ }
+ 
+ /* ── Contact ── */
+ .contactCard {
+   border: 1px solid var(--border);
+-  background: linear-gradient(135deg, rgba(201,149,107,0.04), rgba(126,168,138,0.03));
++  background: var(--surface);
+   border-radius: var(--radius);
+-  padding: 36px 32px;
+-  box-shadow: var(--shadow);
+-  display: flex;
+-  justify-content: space-between;
+-  align-items: center;
+-  gap: 32px;
+-  flex-wrap: wrap;
++  padding: 44px 32px;
++  text-align: center;
+ }
+-.contactLeft { flex: 1; min-width: 280px; }
+ .contactHeading {
+   margin: 0;
+   font-family: var(--font-display);
+-  font-size: 1.6rem;
+   font-weight: 400;
++  font-size: 1.7rem;
+ }
+ .contactSub {
+-  margin: 10px 0 0;
++  margin: 14px auto 0;
+   color: var(--muted);
+-  line-height: 1.65;
+-  max-width: 50ch;
++  line-height: 1.7;
++  max-width: 52ch;
+ }
+ .contactActions {
+   display: flex;
++  justify-content: center;
+   flex-wrap: wrap;
+   gap: 10px;
++  margin-top: 26px;
+ }
+ 
+ /* ── Footer ── */
+ .footer {
+-  margin-top: 88px;
+-  padding: 24px 0;
++  margin-top: 96px;
++  padding-top: 24px;
+   border-top: 1px solid var(--border);
+-}
+-.footerInner {
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   gap: 8px;
+   color: var(--dim);
+-  font-size: 0.84rem;
++  font-size: 0.82rem;
+ }
+-.footerDot { opacity: 0.4; }
+-
+-/* ── Mount animation ── */
+-.app:not(.appMounted) .heroLeft,
+-.app:not(.appMounted) .heroRight {
+-  opacity: 0;
++.footerDot {
++  opacity: 0.4;
+ }
+-.appMounted .heroLeft {
+-  animation: fadeSlideIn 0.5s ease-out both;
++
++/* ── Scrollbar & selection ── */
++::-webkit-scrollbar {
++  width: 8px;
+ }
+-.appMounted .heroRight {
+-  animation: fadeSlideIn 0.5s ease-out 0.15s both;
++::-webkit-scrollbar-track {
++  background: var(--bg);
+ }
+-
+-/* ── Scrollbar ── */
+-::-webkit-scrollbar { width: 8px; }
+-::-webkit-scrollbar-track { background: var(--bg); }
+ ::-webkit-scrollbar-thumb {
+-  background: rgba(255,255,255,0.08);
++  background: rgba(255, 255, 255, 0.1);
+   border-radius: 99px;
+ }
+-::-webkit-scrollbar-thumb:hover {
+-  background: rgba(255,255,255,0.14);
+-}
+-
+-/* ── Selection ── */
+ ::selection {
+-  background: rgba(201,149,107,0.25);
++  background: rgba(207, 154, 108, 0.3);
+   color: var(--text);
+-}
+\ No newline at end of file
++}
+diff --git a/src/App.jsx b/src/App.jsx
+index b9ee6fd..81d9cf8 100644
+--- a/src/App.jsx
++++ b/src/App.jsx
+@@ -1,127 +1,23 @@
+-// App.jsx
+-import React, { useMemo, useState, useEffect, useRef } from "react";
++// App.jsx — layout & components only.
++// All content lives in src/data.js — edit that file to update the site.
++import React, { useState, useEffect, useRef } from "react";
+ import "./App.css";
++import { profile, experience, projects, skills, education } from "./data";
+ 
+-/* ───── Data ───── */
+-const experience = [
+-  {
+-    company: "Texas Comptroller of Public Accounts",
+-    role: "Fullstack Developer Intern",
+-    location: "Austin, TX",
+-    period: "Sep 2025 — Dec 2025",
+-    bullets: [
+-      "Developed production-ready Field Appraisal System utilizing React front end, C# .NET with MS SQL microservices, supporting data-driven decision making and internal state workflows.",
+-      "Implemented a file import pipeline utilizing Backend for Frontend (BFF) API and Amazon S3, enabling virus scans and asynchronous processing for scalability and reliability.",
+-      "Built scalable .NET 8 microservices using domain-driven architecture and CQRS with MediatR, improving maintainability and independent service evolution.",
+-      "Implemented RESTful APIs backed by SQL databases to support transactional workflows, improving data consistency and end-user responsiveness through collaborative design and code reviews.",
+-    ],
+-    tech: ["React", "C#", ".NET 8", "MS SQL", "AWS S3", "CQRS", "MediatR", "DDD", "BFF"],
+-  },
+-  {
+-    company: "Outlier AI",
+-    role: "AI Evaluator",
+-    location: "Remote",
+-    period: "May 2024 — May 2025",
+-    bullets: [
+-      "Evaluated large language models and generative AI systems for enterprise clients, including Amazon, Apple, and Microsoft, identifying failure cases and improving inference accuracy through structured testing.",
+-      "Created advanced training and evaluation frameworks for AI systems used by Meta, Google, and OpenAI, increasing model response quality and reliability.",
+-      "Provided data-driven performance reports to AI development teams, cutting overall error rates in models and improving alignment with real-world cases.",
+-    ],
+-    tech: ["LLMs", "Evaluation", "Prompting", "Data Analysis", "Testing"],
+-  },
+-  {
+-    company: "FedEx Supply Chain",
+-    role: "Supply Chain Associate",
+-    location: "Coppell, TX",
+-    period: "May 2024 — Aug 2024",
+-    bullets: [
+-      "Optimized logistics workflows by relocating 300+ mobile devices based on performance metrics, boosting operational throughput by 15%.",
+-      "Met daily dispatch targets and maintained a safe work environment by coordinating cross-functional teams of 20+ employees and management.",
+-      "Trained 5+ new hires on standard operating procedures and inventory management with a 100% success rate.",
+-    ],
+-    tech: ["Operations", "Coordination", "Training", "Process Improvement"],
+-  },
+-];
+-
+-const projects = [
+-  {
+-    name: "EducaNation",
+-    date: "Dec 2025",
+-    description:
+-      "Full-stack web application serving 50K+ relational records with fast search, joins, and server-side pagination under 300ms average API response times.",
+-    bullets: [
+-      "Server-side pagination and query filtering reduced payload sizes by ~70%, improving front-end scalability.",
+-      "Built responsive UI components and interactive data visualizations with React, Bootstrap, D3, and Recharts.",
+-      "Cross-functional 5-person team using Git workflows, peer code reviews, and CI-tested backend with 90%+ PyTest coverage.",
+-    ],
+-    tech: ["React", "Flask", "PostgreSQL", "Docker", "AWS Amplify", "D3", "Recharts", "PyTest"],
+-  },
+-  {
+-    name: "CPU Emulator",
+-    date: "Nov 2024",
+-    description:
+-      "Designed and built a CPU emulator with a functioning multi-stage pipeline (fetch, decode, execute, memory, write-back) replicating real processor behavior.",
+-    bullets: [
+-      "Implemented cache management and hazard detection mechanisms, reducing memory access penalties.",
+-      "Tested using AArch64 Assembly for performance optimizations, debugged with GDB.",
+-      "Utilized UTCS Linux machines through SSH for remote development and cross-platform reliability.",
+-    ],
+-    tech: ["C", "AArch64 Assembly", "GDB", "Git", "SSH", "Linux"],
+-  },
+-  {
+-    name: "Weather App",
+-    date: "Dec 2024",
+-    description: "Responsive weather application displaying real-time conditions for any searched location worldwide.",
+-    bullets: [
+-      "Built single-page app using React, Vite, and TypeScript.",
+-      "Integrated OpenWeather API and GeoDB Cities API for accurate location-based weather data.",
+-      "Boosted app responsiveness by 50% through asynchronous data fetching.",
+-    ],
+-    tech: ["React", "Vite", "TypeScript", "OpenWeather API", "GeoDB Cities API"],
+-  },
+-];
+-
+-const skillDashboard = {
+-  "Languages": [
+-    { name: "Java", level: 85, signal: "primary" },
+-    { name: "C# / .NET 8", level: 85, signal: "production" },
+-    { name: "JavaScript / TS", level: 84, signal: "production" },
+-    { name: "Python", level: 78, signal: "projects" },
+-    { name: "C", level: 74, signal: "systems" },
+-    { name: "HTML / CSS", level: 86, signal: "production" },
+-  ],
+-  "Frameworks & Systems": [
+-    { name: "React", level: 88, signal: "production" },
+-    { name: "ASP.NET Core", level: 82, signal: "production" },
+-    { name: "Spring Boot", level: 68, signal: "coursework" },
+-    { name: "Node.js", level: 72, signal: "projects" },
+-    { name: "CQRS + MediatR", level: 76, signal: "shipped" },
+-    { name: "DDD Patterns", level: 72, signal: "applied" },
+-  ],
+-  "Infra & Data": [
+-    { name: "SQL Databases", level: 82, signal: "production" },
+-    { name: "AWS (S3/Amplify)", level: 70, signal: "hands-on" },
+-    { name: "Docker", level: 64, signal: "projects" },
+-    { name: "Git Workflows", level: 88, signal: "daily" },
+-    { name: "CI Pipelines", level: 68, signal: "projects" },
+-    { name: "REST API Design", level: 84, signal: "production" },
+-  ],
+-};
+-
+-const toolbelt = [
+-  "VS Code", "Visual Studio", "Eclipse", "Git", "GDB", "SSDT", ".NET CLI",
+-  "NuGet", "Swagger", "React DevTools", "GitHub Copilot", "ChatGPT", "AWS", "REST APIs", "Postman"
+-];
+-
+-/* ───── Hooks ───── */
+-function useReveal(threshold = 0.15) {
++/* ───── Reveal-on-scroll ───── */
++function useReveal(threshold = 0.12) {
+   const ref = useRef(null);
+   const [visible, setVisible] = useState(false);
+   useEffect(() => {
+     const el = ref.current;
+     if (!el) return;
+     const obs = new IntersectionObserver(
+-      ([e]) => { if (e.isIntersecting) { setVisible(true); obs.unobserve(el); } },
++      ([e]) => {
++        if (e.isIntersecting) {
++          setVisible(true);
++          obs.unobserve(el);
++        }
++      },
+       { threshold }
+     );
+     obs.observe(el);
+@@ -130,13 +26,12 @@ function useReveal(threshold = 0.15) {
+   return [ref, visible];
+ }
+ 
+-/* ───── Components ───── */
+-function Reveal({ children, delay = 0, className = "" }) {
+-  const [ref, visible] = useReveal(0.12);
++function Reveal({ children, delay = 0 }) {
++  const [ref, visible] = useReveal();
+   return (
+     <div
+       ref={ref}
+-      className={`reveal ${visible ? "revealed" : ""} ${className}`}
++      className={`reveal ${visible ? "revealed" : ""}`}
+       style={{ transitionDelay: `${delay}ms` }}
+     >
+       {children}
+@@ -144,39 +39,46 @@ function Reveal({ children, delay = 0, className = "" }) {
+   );
+ }
+ 
++/* ───── Small pieces ───── */
+ function Pill({ children }) {
+   return <span className="pill">{children}</span>;
+ }
+ 
+-function SkillRow({ name, level, signal }) {
+-  const [ref, visible] = useReveal(0.1);
++function SectionHeading({ num, title }) {
+   return (
+-    <div className="skillRow" ref={ref}>
+-      <div className="skillMeta">
+-        <div className="skillName">{name}</div>
+-        <div className="skillSignal">{signal}</div>
+-      </div>
+-      <div className="bar" aria-label={`${name} proficiency ${level} percent`}>
+-        <div
+-          className="barFill"
+-          style={{ width: visible ? `${level}%` : "0%", transition: "width 1s cubic-bezier(.22,1,.36,1)" }}
+-        />
++    <Reveal>
++      <div className="sectionLabel">
++        <span className="sectionNum">{num}</span>
++        <h2>{title}</h2>
++        <span className="sectionRule" aria-hidden="true" />
+       </div>
+-    </div>
++    </Reveal>
+   );
+ }
+ 
+-function FloatingNav() {
++/* ───── Nav ───── */
++const navLinks = [
++  { id: "experience", label: "Experience" },
++  { id: "projects", label: "Projects" },
++  { id: "skills", label: "Skills" },
++  { id: "education", label: "Education" },
++  { id: "contact", label: "Contact" },
++];
++
++function Nav() {
+   const [scrolled, setScrolled] = useState(false);
+   const [active, setActive] = useState("");
+ 
+   useEffect(() => {
+     const onScroll = () => {
+       setScrolled(window.scrollY > 40);
+-      const sections = ["contact", "skills", "projects", "experience", "education", "about"];
+-      for (const id of sections) {
++      const ids = [...navLinks.map((l) => l.id)].reverse();
++      for (const id of ids) {
+         const el = document.getElementById(id);
+-        if (el && el.getBoundingClientRect().top < 200) { setActive(id); return; }
++        if (el && el.getBoundingClientRect().top < 200) {
++          setActive(id);
++          return;
++        }
+       }
+       setActive("");
+     };
+@@ -184,33 +86,15 @@ function FloatingNav() {
+     return () => window.removeEventListener("scroll", onScroll);
+   }, []);
+ 
+-  const links = [
+-    { id: "about", label: "About" },
+-    { id: "education", label: "Education" },
+-    { id: "experience", label: "Experience" },
+-    { id: "projects", label: "Projects" },
+-    { id: "skills", label: "Skills" },
+-    { id: "contact", label: "Contact" },
+-  ];
+-
+   return (
+     <header className={`nav ${scrolled ? "navScrolled" : ""}`}>
+       <div className="navInner">
+-        <a className="brand" href="#top" aria-label="Go to top">
+-          <span className="brandMark">
+-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+-              <path d="M2 16V2h6c3.3 0 5 1.7 5 4.2 0 2.6-1.8 4.3-5.2 4.3H5.5" stroke="#0b0c10" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
+-              <path d="M5.5 10.5V16" stroke="#0b0c10" strokeWidth="2.2" strokeLinecap="round"/>
+-            </svg>
+-          </span>
+-          <span className="brandText">
+-            <span className="brandName">Prasidda Gautam</span>
+-            <span className="brandSub">Software Developer · UT Austin CS '27</span>
+-          </span>
++        <a className="brand" href="#top">
++          <span className="brandName">{profile.name}</span>
++          <span className="brandSub">{profile.title} · {profile.school}</span>
+         </a>
+-
+         <nav className="navLinks" aria-label="Primary navigation">
+-          {links.map((l) => (
++          {navLinks.map((l) => (
+             <a key={l.id} href={`#${l.id}`} className={active === l.id ? "navActive" : ""}>
+               {l.label}
+             </a>
+@@ -221,362 +105,214 @@ function FloatingNav() {
+   );
+ }
+ 
+-/* ───── Main App ───── */
+-export default function App() {
+-  const [openXp, setOpenXp] = useState(experience[0]?.company ?? "");
+-  const [mounted, setMounted] = useState(false);
+-
+-  useEffect(() => {
+-    requestAnimationFrame(() => setMounted(true));
+-  }, []);
+-
+-  const heroHighlights = useMemo(
+-    () => [
+-      { k: "50K+", v: "records served", icon: "◆" },
+-      { k: "<300ms", v: "avg API response", icon: "⚡" },
+-      { k: "~70%", v: "payload reduction", icon: "↓" },
+-      { k: "90%+", v: "test coverage", icon: "✓" },
+-    ],
+-    []
++/* ───── Sections ───── */
++function Hero() {
++  return (
++    <section className="hero">
++      <div className="heroStatus">
++        <span className="statusDot" />
++        {profile.status}
++      </div>
++      <h1 className="heroTitle">
++        {profile.headline[0]}
++        <br />
++        <span className="heroAccent">{profile.headline[1]}</span>
++      </h1>
++      <p className="lead">{profile.lead}</p>
++      <div className="heroActions">
++        <a className="btnPrimary" href={profile.resume} target="_blank" rel="noopener noreferrer">
++          Resume
++        </a>
++        <a className="btnGhost" href={profile.github} target="_blank" rel="noopener noreferrer">
++          GitHub
++        </a>
++        <a className="btnGhost" href={profile.linkedin} target="_blank" rel="noopener noreferrer">
++          LinkedIn
++        </a>
++        <a className="btnGhost" href={`mailto:${profile.email}`}>
++          Email
++        </a>
++      </div>
++      <p className="heroMeta">{profile.location}</p>
++    </section>
+   );
++}
+ 
++function Experience() {
+   return (
+-    <div className={`app ${mounted ? "appMounted" : ""}`}>
+-      {/* Decorative grid overlay */}
+-      <div className="gridOverlay" aria-hidden="true" />
+-
+-      <FloatingNav />
+-
+-      <main id="top" className="container">
+-        {/* ── HERO ── */}
+-        <section className="hero">
+-          <div className="heroLeft">
+-            <div className="heroEyebrow">
+-              <span className="eyebrowDot" />
+-              <span>Available for Summer 2026 internships</span>
+-            </div>
+-
+-            <h1 className="heroTitle">
+-              <span className="heroLine heroLine1">Building reliable</span>
+-              <span className="heroLine heroLine2">systems from</span>
+-              <span className="heroLine heroLine3">
+-                <span className="heroAccent">UI</span> to{" "}
+-                <span className="heroAccent">microservices</span>
+-              </span>
+-            </h1>
+-
+-            <p className="lead">
+-              CS at UT Austin (3.7 GPA) with production experience across full-stack development, .NET microservices, and AI evaluation. I write code that ships, scales, and survives code review.
+-            </p>
+-
+-            <div className="heroActions">
+-              <a className="btnPrimary" href="/Prasidda_Gautam_Resume.pdf" target="_blank" rel="noopener noreferrer">
+-                <span>↗</span> Resume
+-              </a>
+-              <a className="btnGhost" href="#projects">
+-                Projects
+-              </a>
+-              <a className="btnGhost" href="https://github.com/prasidda" target="_blank" rel="noopener noreferrer">
+-                GitHub
+-              </a>
+-              <a className="btnGhost" href="https://linkedin.com/in/prasidda-gautam" target="_blank" rel="noopener noreferrer">
+-                LinkedIn
+-              </a>
+-            </div>
+-
+-            <div className="heroStats">
+-              {heroHighlights.map((x, i) => (
+-                <div className="stat" key={x.k} style={{ animationDelay: `${600 + i * 100}ms` }}>
+-                  <div className="statIcon">{x.icon}</div>
+-                  <div className="statK">{x.k}</div>
+-                  <div className="statV">{x.v}</div>
++    <section id="experience" className="section">
++      <SectionHeading num="01" title="Experience" />
++      <div className="timeline">
++        {experience.map((job, i) => (
++          <Reveal key={job.company + job.period} delay={i * 80}>
++            <article className="timelineItem">
++              <div className="timelineMarker" aria-hidden="true" />
++              <div className="timelineContent">
++                <div className="xpHead">
++                  <div>
++                    <h3 className="xpRole">{job.role}</h3>
++                    <div className="xpCompany">{job.company}</div>
++                  </div>
++                  <div className="xpMeta">
++                    <span>{job.period}</span>
++                    <span>{job.location}</span>
++                  </div>
+                 </div>
+-              ))}
+-            </div>
+-          </div>
+-
+-          <div className="heroRight">
+-            <div className="terminal">
+-              <div className="termTop" aria-hidden="true">
+-                <span /><span /><span />
+-                <div className="termTitle">prasidda.dev</div>
+-              </div>
+-              <div className="termBody">
+-                <div className="tline"><span className="prompt">→</span> <span className="tkey">focus</span> <span className="tstrong">Full-stack · Distributed Systems · AI</span></div>
+-                <div className="tline"><span className="prompt">→</span> <span className="tkey">latest</span> <span className="tstrong">Texas Comptroller — Sep–Dec 2025</span></div>
+-                <div className="tline"><span className="prompt">→</span> <span className="tkey">stack</span> <span className="tstrong">React · C# · .NET 8 · SQL · AWS · Python</span></div>
+-                <div className="tline"><span className="prompt">→</span> <span className="tkey">values</span> <span className="tstrong">Clean APIs · Maintainability · Performance</span></div>
+-                <div className="tline tlineCursor"><span className="prompt">→</span> <span className="tkey">status</span> <span className="tstrong cursorBlink">open to opportunities_</span></div>
+-              </div>
+-            </div>
+-
+-            <div className="locationCard">
+-              <div className="locationIcon">
+-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+-                  <path d="M8 1C5.2 1 3 3.2 3 6c0 4 5 9 5 9s5-5 5-9c0-2.8-2.2-5-5-5z" stroke="currentColor" strokeWidth="1.5" fill="none"/>
+-                  <circle cx="8" cy="6" r="1.5" fill="currentColor"/>
+-                </svg>
+-              </div>
+-              <div className="locationText">
+-                <span className="locationCity">Dallas · Austin, TX</span>
+-                <span className="locationNote">Open to relocation</span>
+-              </div>
+-            </div>
+-
+-            <div className="miniNote">
+-              <div className="miniNoteIcon">✦</div>
+-              <div>
+-                <div className="miniNoteTitle">Why this portfolio is different</div>
+-                <div className="miniNoteBody">
+-                  Every metric is real. Every bullet ties to shipped code. No filler.
++                <ul className="bullets">
++                  {job.bullets.map((b, j) => (
++                    <li key={j}>{b}</li>
++                  ))}
++                </ul>
++                <div className="pills">
++                  {job.tech.map((t) => (
++                    <Pill key={t}>{t}</Pill>
++                  ))}
+                 </div>
+               </div>
+-            </div>
+-          </div>
+-        </section>
+-
+-        {/* ── ABOUT ── */}
+-        <section id="about" className="section">
+-          <Reveal>
+-            <div className="sectionLabel">
+-              <span className="sectionNum">01</span>
+-              <h2>About</h2>
+-            </div>
+-          </Reveal>
+-
+-          <div className="aboutGrid">
+-            <Reveal delay={100}>
+-              <div className="card cardAbout">
+-                <div className="cardIcon">⬡</div>
+-                <h3>Who I am</h3>
+-                <p>
+-                  Software developer and CS student at the University of Texas at Austin (Class of 2027) with a Business minor and a 3.7 GPA. I care about building systems that are scalable, testable, and maintainable, not just functional.
+-                </p>
+-              </div>
+-            </Reveal>
+-
+-            <Reveal delay={200}>
+-              <div className="card cardAbout">
+-                <div className="cardIcon">⟐</div>
+-                <h3>How I work</h3>
+-                <p>Comfortable with greenfield and legacy systems alike. Strong bias toward clean abstractions and APIs. Git and code reviews are collaboration tools, not checkboxes. I iterate quickly and ship responsibly.</p>
+-              </div>
+-            </Reveal>
+-
+-            <Reveal delay={300}>
+-              <div className="card cardAbout">
+-                <div className="cardIcon">◈</div>
+-                <h3>What drives me</h3>
+-                <p>I want to work on problems where the engineering matters, where performance, architecture, and reliability are requirements and not afterthoughts.</p>
+-              </div>
+-            </Reveal>
+-          </div>
+-        </section>
+-
+-        {/* ── EDUCATION ── */}
+-        <section id="education" className="section">
+-          <Reveal>
+-            <div className="sectionLabel">
+-              <span className="sectionNum">02</span>
+-              <h2>Education</h2>
+-            </div>
++            </article>
+           </Reveal>
++        ))}
++      </div>
++    </section>
++  );
++}
+ 
+-          <Reveal delay={100}>
+-            <div className="card eduCard">
+-              <div className="eduTop">
+-                <div className="eduMain">
+-                  <h3>University of Texas at Austin</h3>
+-                  <p className="eduDegree">Bachelor of Science in Computer Science · Minor in Business</p>
+-                </div>
+-                <div className="eduSide">
+-                  <span className="eduDate">Aug 2023 - May 2027</span>
+-                  <span className="eduGpa">3.7 GPA</span>
+-                </div>
++function Projects() {
++  return (
++    <section id="projects" className="section">
++      <SectionHeading num="02" title="Projects" />
++      <div className="projGrid">
++        {projects.map((p, i) => (
++          <Reveal key={p.name} delay={i * 80}>
++            <article className="card projCard">
++              <div className="projTop">
++                <h3>{p.name}</h3>
++                <span className="projDate">{p.date}</span>
+               </div>
+-              <div className="eduCourses">
+-                <span className="eduCoursesLabel">Relevant Coursework</span>
++              <p className="projDesc">{p.description}</p>
++              <ul className="bullets">
++                {p.bullets.map((b, j) => (
++                  <li key={j}>{b}</li>
++                ))}
++              </ul>
++              <div className="projBottom">
+                 <div className="pills">
+-                  {[
+-                    "Data Structures", "Algorithms Analysis", "Artificial Intelligence",
+-                    "Computer Architecture", "Operating Systems", "Cloud Computing",
+-                    "Software Engineering", "Linear Algebra", "Discrete Math"
+-                  ].map((c) => <Pill key={c}>{c}</Pill>)}
++                  {p.tech.map((t) => (
++                    <Pill key={t}>{t}</Pill>
++                  ))}
+                 </div>
++                {p.link && (
++                  <a className="projLink" href={p.link} target="_blank" rel="noopener noreferrer">
++                    View →
++                  </a>
++                )}
+               </div>
+-            </div>
+-          </Reveal>
+-        </section>
+-
+-        {/* ── EXPERIENCE ── */}
+-        <section id="experience" className="section">
+-          <Reveal>
+-            <div className="sectionLabel">
+-              <span className="sectionNum">03</span>
+-              <h2>Experience</h2>
+-            </div>
+-          </Reveal>
+-
+-          <div className="xpList">
+-            {experience.map((job, idx) => {
+-              const open = openXp === job.company;
+-              return (
+-                <Reveal key={job.company} delay={idx * 80}>
+-                  <div className={`xpItem ${open ? "open" : ""}`}>
+-                    <button className="xpHead" onClick={() => setOpenXp(open ? "" : job.company)} type="button">
+-                      <div className="xpMain">
+-                        <div className="xpRole">{job.role}</div>
+-                        <div className="xpCompany">{job.company}</div>
+-                      </div>
+-                      <div className="xpSide">
+-                        <div className="xpMeta">{job.location}</div>
+-                        <div className="xpMeta">{job.period}</div>
+-                        <div className="xpToggle" aria-hidden="true">
+-                          <svg width="12" height="12" viewBox="0 0 12 12" style={{ transform: open ? "rotate(45deg)" : "rotate(0)", transition: "transform 0.3s ease" }}>
+-                            <line x1="6" y1="1" x2="6" y2="11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+-                            <line x1="1" y1="6" x2="11" y2="6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+-                          </svg>
+-                        </div>
+-                      </div>
+-                    </button>
+-
+-                    <div className="xpBody">
+-                      <ul>
+-                        {job.bullets.map((b, i) => (
+-                          <li key={i}>{b}</li>
+-                        ))}
+-                      </ul>
+-                      <div className="pills">
+-                        {job.tech.map((t) => (
+-                          <Pill key={t}>{t}</Pill>
+-                        ))}
+-                      </div>
+-                    </div>
+-                  </div>
+-                </Reveal>
+-              );
+-            })}
+-          </div>
+-        </section>
+-
+-        {/* ── PROJECTS ── */}
+-        <section id="projects" className="section">
+-          <Reveal>
+-            <div className="sectionLabel">
+-              <span className="sectionNum">04</span>
+-              <h2>Projects</h2>
+-            </div>
+-          </Reveal>
+-
+-          <div className="projGrid">
+-            {projects.map((p, i) => (
+-              <Reveal key={p.name} delay={i * 120}>
+-                <article className="card cardProj">
+-                  <div className="projTop">
+-                    <h3>{p.name}</h3>
+-                    <span className="projDate">{p.date}</span>
+-                  </div>
+-                  <p className="projDesc">{p.description}</p>
+-                  <ul>
+-                    {p.bullets.map((b, i) => (
+-                      <li key={i}>{b}</li>
+-                    ))}
+-                  </ul>
+-                  <div className="projBottom">
+-                    <div className="pills">
+-                      {p.tech.map((t) => (
+-                        <Pill key={t}>{t}</Pill>
+-                      ))}
+-                    </div>
+-                  </div>
+-                </article>
+-              </Reveal>
+-            ))}
+-          </div>
+-        </section>
+-
+-        {/* ── SKILLS ── */}
+-        <section id="skills" className="section">
+-          <Reveal>
+-            <div className="sectionLabel">
+-              <span className="sectionNum">05</span>
+-              <h2>Skills</h2>
+-            </div>
++            </article>
+           </Reveal>
++        ))}
++      </div>
++    </section>
++  );
++}
+ 
+-          <div className="skillsDash">
+-            {Object.entries(skillDashboard).map(([group, items], i) => (
+-              <Reveal key={group} delay={i * 100}>
+-                <div className="card cardSkill">
+-                  <div className="skillsHead">
+-                    <h3>{group}</h3>
+-                    <span className="skillsHint">signal-based</span>
+-                  </div>
+-                  <div className="skillsRows">
+-                    {items.map((s) => (
+-                      <SkillRow key={s.name} name={s.name} level={s.level} signal={s.signal} />
+-                    ))}
+-                  </div>
+-                </div>
+-              </Reveal>
+-            ))}
+-          </div>
+-
+-          <Reveal delay={300}>
+-            <div className="card toolbelt">
+-              <div className="skillsHead">
+-                <h3>Toolbelt</h3>
+-                <span className="skillsHint">daily drivers</span>
+-              </div>
++function Skills() {
++  return (
++    <section id="skills" className="section">
++      <SectionHeading num="03" title="Skills" />
++      <div className="skillsGrid">
++        {Object.entries(skills).map(([group, items], i) => (
++          <Reveal key={group} delay={i * 80}>
++            <div className="card skillCard">
++              <h3>{group}</h3>
+               <div className="pills">
+-                {toolbelt.map((t) => (
+-                  <Pill key={t}>{t}</Pill>
++                {items.map((s) => (
++                  <Pill key={s}>{s}</Pill>
+                 ))}
+               </div>
+             </div>
+           </Reveal>
+-        </section>
++        ))}
++      </div>
++    </section>
++  );
++}
+ 
+-        {/* ── CONTACT ── */}
+-        <section id="contact" className="section">
+-          <Reveal>
+-            <div className="sectionLabel">
+-              <span className="sectionNum">06</span>
+-              <h2>Contact</h2>
++function Education() {
++  return (
++    <section id="education" className="section">
++      <SectionHeading num="04" title="Education" />
++      <Reveal>
++        <div className="card eduCard">
++          <div className="eduTop">
++            <div>
++              <h3>{education.school}</h3>
++              <p className="eduDegree">{education.degree}</p>
+             </div>
+-          </Reveal>
+-
+-          <Reveal delay={100}>
+-            <div className="contactCard">
+-              <div className="contactLeft">
+-                <h3 className="contactHeading">Let's build something together.</h3>
+-                <p className="contactSub">
+-                  I'm open to engineering internships and opportunities where I can build real systems across full-stack, backend, and applied AI. References available on request.
+-                </p>
+-              </div>
+-              <div className="contactActions">
+-                <a className="btnPrimary" href="mailto:prasiddagautam5@gmail.com?subject=Let's%20connect">
+-                  <span>✉</span> Email Me
+-                </a>
+-                <a className="btnGhost" href="https://github.com/prasidda" target="_blank" rel="noopener noreferrer">
+-                  GitHub
+-                </a>
+-                <a className="btnGhost" href="https://linkedin.com/in/prasidda-gautam" target="_blank" rel="noopener noreferrer">
+-                  LinkedIn
+-                </a>
+-              </div>
++            <div className="eduSide">
++              <span className="eduDate">{education.period}</span>
++              <span className="eduGpa">{education.gpa}</span>
+             </div>
+-          </Reveal>
+-        </section>
++          </div>
++          <div className="eduCourses">
++            <span className="eduCoursesLabel">Relevant Coursework</span>
++            <div className="pills">
++              {education.coursework.map((c) => (
++                <Pill key={c}>{c}</Pill>
++              ))}
++            </div>
++          </div>
++        </div>
++      </Reveal>
++    </section>
++  );
++}
+ 
+-        <footer className="footer">
+-          <div className="footerInner">
+-            <span>© {new Date().getFullYear()} Prasidda Gautam</span>
+-            <span className="footerDot">·</span>
+-            <span>Built with React</span>
++function Contact() {
++  return (
++    <section id="contact" className="section">
++      <SectionHeading num="05" title="Contact" />
++      <Reveal>
++        <div className="contactCard">
++          <h3 className="contactHeading">Let's build something together.</h3>
++          <p className="contactSub">
++            I'm open to engineering roles where I can build real systems across full-stack,
++            backend, and applied AI. References available on request.
++          </p>
++          <div className="contactActions">
++            <a className="btnPrimary" href={`mailto:${profile.email}?subject=Let's%20connect`}>
++              Email me
++            </a>
++            <a className="btnGhost" href={profile.github} target="_blank" rel="noopener noreferrer">
++              GitHub
++            </a>
++            <a className="btnGhost" href={profile.linkedin} target="_blank" rel="noopener noreferrer">
++              LinkedIn
++            </a>
+           </div>
++        </div>
++      </Reveal>
++    </section>
++  );
++}
++
++/* ───── App ───── */
++export default function App() {
++  return (
++    <div className="app">
++      <Nav />
++      <main id="top" className="container">
++        <Hero />
++        <Experience />
++        <Projects />
++        <Skills />
++        <Education />
++        <Contact />
++        <footer className="footer">
++          <span>© {new Date().getFullYear()} {profile.name}</span>
++          <span className="footerDot">·</span>
++          <span>Built with React</span>
+         </footer>
+       </main>
+     </div>
+   );
+-}
+\ No newline at end of file
++}
+diff --git a/src/data.js b/src/data.js
+new file mode 100644
+index 0000000..ca6c66f
+--- /dev/null
++++ b/src/data.js
+@@ -0,0 +1,163 @@
++// ============================================================
++//  data.js — ALL website content lives in this one file.
++//  To update the site, edit this file only. No need to touch
++//  App.jsx or App.css.
++// ============================================================
++
++export const profile = {
++  name: "Prasidda Gautam",
++  title: "Software Developer",
++  school: "UT Austin CS '27",
++
++  // Short status shown as the pill at the top of the page.
++  status: "Open to new opportunities",
++
++  // The big hero headline (first line plain, second line accented).
++  headline: ["Building reliable systems", "from UI to microservices."],
++
++  // The paragraph under the headline.
++  lead:
++    "CS student at UT Austin (3.7 GPA, Business minor) with production experience across full-stack development, .NET microservices, and AI evaluation. I care about building software that is scalable, testable, and maintainable — not just functional.",
++
++  location: "Dallas · Austin, TX — open to relocation",
++  email: "prasiddagautam5@gmail.com",
++  github: "https://github.com/prasidda",
++  linkedin: "https://linkedin.com/in/prasidda-gautam",
++  resume: "/Prasidda_Gautam_Resume.pdf", // file lives in /public
++};
++
++// ============================================================
++//  EXPERIENCE — newest first.
++//
++//  ➜ TO ADD YOUR IBM INTERNSHIP: copy the template below to the
++//    top of the `experience` array, delete the leading `//` on
++//    each line, and fill in your real title, dates, and bullets.
++//
++//  {
++//    company: "IBM",
++//    role: "Software Engineer Intern",          // your actual title
++//    location: "City, ST",
++//    period: "May 2026 — Aug 2026",             // your actual dates
++//    bullets: [
++//      "What you built, the tech you used, and the impact it had.",
++//      "Another concrete accomplishment with a metric if you have one.",
++//      "A third bullet about collaboration, scale, or results.",
++//    ],
++//    tech: ["Java", "Kubernetes", "..."],       // main tools you used
++//  },
++// ============================================================
++
++export const experience = [
++  {
++    company: "Texas Comptroller of Public Accounts",
++    role: "Fullstack Developer Intern",
++    location: "Austin, TX",
++    period: "Sep 2025 — Dec 2025",
++    bullets: [
++      "Developed a production-ready Field Appraisal System with a React front end and C# .NET microservices on MS SQL, supporting data-driven decision making and internal state workflows.",
++      "Implemented a file import pipeline using a Backend-for-Frontend (BFF) API and Amazon S3, enabling virus scans and asynchronous processing for scalability and reliability.",
++      "Built scalable .NET 8 microservices using domain-driven architecture and CQRS with MediatR, improving maintainability and independent service evolution.",
++      "Implemented RESTful APIs backed by SQL databases to support transactional workflows, improving data consistency and end-user responsiveness through collaborative design and code reviews.",
++    ],
++    tech: ["React", "C#", ".NET 8", "MS SQL", "AWS S3", "CQRS", "MediatR"],
++  },
++  {
++    company: "Outlier AI",
++    role: "AI Evaluator",
++    location: "Remote",
++    period: "May 2024 — May 2025",
++    bullets: [
++      "Evaluated large language models and generative AI systems for enterprise clients, identifying failure cases and improving inference accuracy through structured testing.",
++      "Created advanced training and evaluation frameworks for AI systems used by major AI labs, increasing model response quality and reliability.",
++      "Provided data-driven performance reports to AI development teams, cutting overall error rates and improving alignment with real-world cases.",
++    ],
++    tech: ["LLMs", "Evaluation", "Prompting", "Data Analysis"],
++  },
++  {
++    company: "FedEx Supply Chain",
++    role: "Supply Chain Associate",
++    location: "Coppell, TX",
++    period: "May 2024 — Aug 2024",
++    bullets: [
++      "Optimized logistics workflows by relocating 300+ mobile devices based on performance metrics, boosting operational throughput by 15%.",
++      "Met daily dispatch targets and maintained a safe work environment by coordinating cross-functional teams of 20+ employees and management.",
++      "Trained 5+ new hires on standard operating procedures and inventory management with a 100% success rate.",
++    ],
++    tech: ["Operations", "Coordination", "Process Improvement"],
++  },
++];
++
++// ============================================================
++//  PROJECTS — add new ones at the top.
++//  `link` is optional: add  link: "https://..."  to show a
++//  "View →" link on the card (GitHub repo or live demo).
++// ============================================================
++
++export const projects = [
++  {
++    name: "EducaNation",
++    date: "Dec 2025",
++    description:
++      "Full-stack web app serving 50K+ relational records with fast search, joins, and server-side pagination under 300ms average API response times.",
++    bullets: [
++      "Server-side pagination and query filtering reduced payload sizes by ~70%.",
++      "Responsive UI with interactive data visualizations using D3 and Recharts.",
++      "5-person team with Git workflows, code reviews, and 90%+ PyTest coverage.",
++    ],
++    tech: ["React", "Flask", "PostgreSQL", "Docker", "AWS Amplify"],
++  },
++  {
++    name: "CPU Emulator",
++    date: "Nov 2024",
++    description:
++      "CPU emulator with a functioning multi-stage pipeline — fetch, decode, execute, memory, write-back — replicating real processor behavior.",
++    bullets: [
++      "Implemented cache management and hazard detection, reducing memory access penalties.",
++      "Tested with AArch64 Assembly for performance optimizations, debugged with GDB.",
++      "Developed remotely on UTCS Linux machines over SSH.",
++    ],
++    tech: ["C", "AArch64 Assembly", "GDB", "Linux"],
++  },
++  {
++    name: "Weather App",
++    date: "Dec 2024",
++    description:
++      "Responsive weather application displaying real-time conditions for any searched location worldwide.",
++    bullets: [
++      "Single-page app built with React, Vite, and TypeScript.",
++      "Integrated OpenWeather and GeoDB Cities APIs for location-based data.",
++      "Boosted responsiveness by 50% through asynchronous data fetching.",
++    ],
++    tech: ["React", "Vite", "TypeScript", "OpenWeather API"],
++  },
++];
++
++// ============================================================
++//  SKILLS — grouped tags. Just add/remove strings.
++// ============================================================
++
++export const skills = {
++  Languages: ["Java", "C# / .NET", "JavaScript / TypeScript", "Python", "C", "SQL", "HTML / CSS"],
++  "Frameworks & Libraries": ["React", "ASP.NET Core", "Spring Boot", "Node.js", "Flask", "Vite"],
++  "Tools & Infrastructure": ["Git", "Docker", "AWS (S3, Amplify)", "CI Pipelines", "REST API Design", "Postman", "GDB", "Linux"],
++};
++
++// ============================================================
++//  EDUCATION
++// ============================================================
++
++export const education = {
++  school: "University of Texas at Austin",
++  degree: "B.S. in Computer Science · Minor in Business",
++  period: "Aug 2023 — May 2027",
++  gpa: "3.7 GPA",
++  coursework: [
++    "Data Structures",
++    "Algorithms Analysis",
++    "Artificial Intelligence",
++    "Computer Architecture",
++    "Operating Systems",
++    "Cloud Computing",
++    "Software Engineering",
++  ],
++};
+diff --git a/src/index.css b/src/index.css
+index 8cae0d3..95ca6ef 100644
+--- a/src/index.css
++++ b/src/index.css
+@@ -1,20 +1,14 @@
+-/* index.css */
+-@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Satoshi:wght@400;500;700;900&display=swap');
++/* index.css — global resets & fonts */
++@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@400;500;600;700&display=swap');
+ 
+ *, *::before, *::after { box-sizing: border-box; }
+-html { scroll-behavior: smooth; scroll-padding-top: 64px; }
++html { scroll-behavior: smooth; scroll-padding-top: 80px; }
+ body {
+   margin: 0;
+-  font-family: 'Satoshi', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
++  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+   -webkit-font-smoothing: antialiased;
+   text-rendering: optimizeLegibility;
+-  background: #0a0a0f;
+-  color: #ece8e1;
++  background: #0d0d11;
++  color: #ebe9e4;
+ }
+ #root { min-height: 100vh; }
+-
+-/* Prevent FOUT for Satoshi */
+-@font-face {
+-  font-family: 'Satoshi';
+-  font-display: swap;
+-}
+\ No newline at end of file
+-- 
+2.43.0
+
+
+From 05c68cf38ba28e0bab1db917d82e94993aefdd6e Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Fri, 12 Jun 2026 05:35:10 +0000
+Subject: [PATCH 2/2] Replace design with editorial studio theme (paper, ink,
+ cobalt)
+
+Ground-up redesign: light warm-paper background, oversized Fraunces
+serif typography, cobalt accent, hairline rules, monospace micro-labels,
+index-style project rows, and three-column skill lists. Content still
+lives entirely in src/data.js.
+
+https://claude.ai/code/session_01Aw6Qai5C6BaBGfUUgpPsPg
+---
+ src/App.css   | 848 +++++++++++++++++++++++++-------------------------
+ src/App.jsx   | 323 +++++++++----------
+ src/index.css |  10 +-
+ 3 files changed, 580 insertions(+), 601 deletions(-)
+
+diff --git a/src/App.css b/src/App.css
+index d23378a..3703319 100644
+--- a/src/App.css
++++ b/src/App.css
+@@ -1,52 +1,50 @@
+-/* App.css — refined editorial dark theme */
++/* App.css — editorial studio theme: paper, ink, cobalt */
+ 
+ :root {
+-  --bg: #0d0d11;
+-  --surface: rgba(255, 255, 255, 0.03);
+-  --surface2: rgba(255, 255, 255, 0.06);
+-  --border: rgba(255, 255, 255, 0.09);
+-  --border2: rgba(255, 255, 255, 0.16);
++  --paper: #f5f1ea;
++  --paper-raised: #efe9df;
++  --ink: #181512;
++  --ink-soft: rgba(24, 21, 18, 0.68);
++  --ink-faint: rgba(24, 21, 18, 0.45);
++  --rule: rgba(24, 21, 18, 0.16);
++  --rule-strong: rgba(24, 21, 18, 0.85);
++  --cobalt: #2240d4;
++  --cobalt-deep: #1730a8;
+ 
+-  --text: #ebe9e4;
+-  --muted: rgba(235, 233, 228, 0.62);
+-  --dim: rgba(235, 233, 228, 0.38);
+-
+-  --accent: #cf9a6c;
+-  --accent-light: #e3b98e;
+-  --accent-soft: rgba(207, 154, 108, 0.12);
+-  --accent-border: rgba(207, 154, 108, 0.28);
+-
+-  --radius: 14px;
+-  --radius-sm: 9px;
+-
+-  --font-display: "DM Serif Display", Georgia, serif;
+-  --font-body: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
++  --serif: "Fraunces", Georgia, serif;
++  --sans: "Space Grotesk", -apple-system, sans-serif;
++  --mono: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+ }
+ 
+ /* ── Base ── */
+-.app {
++.page {
+   min-height: 100vh;
+-  background: var(--bg);
+-  color: var(--text);
+-  font-family: var(--font-body);
++  background: var(--paper);
++  color: var(--ink);
++  font-family: var(--sans);
+ }
+ 
+-.container {
+-  max-width: 980px;
++.frame {
++  max-width: 1100px;
+   margin: 0 auto;
+-  padding: 0 24px 80px;
++  padding: 0 28px;
++}
++
++::selection {
++  background: var(--cobalt);
++  color: var(--paper);
+ }
+ 
+-/* ── Reveal animation ── */
++/* ── Reveal ── */
+ .reveal {
+   opacity: 0;
+-  transform: translateY(20px);
+-  transition: opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+-    transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
++  transform: translateY(18px);
++  transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
++    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+ }
+-.reveal.revealed {
++.reveal.is-visible {
+   opacity: 1;
+-  transform: translateY(0);
++  transform: none;
+ }
+ @media (prefers-reduced-motion: reduce) {
+   .reveal {
+@@ -56,504 +54,518 @@
+   }
+ }
+ 
+-/* ── Nav ── */
+-.nav {
++/* ── Header ── */
++.site-header {
+   position: sticky;
+   top: 0;
+-  z-index: 100;
+-  background: rgba(13, 13, 17, 0.75);
+-  backdrop-filter: blur(14px);
+-  border-bottom: 1px solid transparent;
+-  transition: border-color 0.3s, background 0.3s;
+-}
+-.navScrolled {
+-  border-bottom-color: var(--border);
+-  background: rgba(13, 13, 17, 0.92);
+-}
+-.navInner {
+-  max-width: 980px;
+-  margin: 0 auto;
+-  padding: 14px 24px;
++  z-index: 50;
+   display: flex;
+   justify-content: space-between;
+   align-items: center;
+   gap: 16px;
+-  flex-wrap: wrap;
++  padding: 18px 28px;
++  background: rgba(245, 241, 234, 0.88);
++  backdrop-filter: blur(10px);
++  border-bottom: 1px solid transparent;
++  transition: border-color 0.25s;
++}
++.site-header.is-scrolled {
++  border-bottom-color: var(--rule);
+ }
+ 
+-.brand {
+-  display: flex;
+-  flex-direction: column;
+-  line-height: 1.2;
++.wordmark {
++  font-family: var(--mono);
++  font-size: 0.8rem;
++  font-weight: 500;
++  letter-spacing: 0.14em;
++  text-transform: uppercase;
++  color: var(--ink);
+   text-decoration: none;
+-  color: var(--text);
+-}
+-.brandName {
+-  font-family: var(--font-display);
+-  font-size: 1.05rem;
+-  letter-spacing: 0.01em;
+-}
+-.brandSub {
+-  font-size: 0.74rem;
+-  color: var(--muted);
+-  margin-top: 1px;
+ }
+ 
+-.navLinks {
++.site-nav {
+   display: flex;
+-  align-items: center;
+-  gap: 2px;
+-  flex-wrap: wrap;
++  gap: 26px;
+ }
+-.navLinks a {
+-  color: var(--muted);
++.site-nav a {
++  font-family: var(--mono);
++  font-size: 0.74rem;
++  letter-spacing: 0.12em;
++  text-transform: uppercase;
++  color: var(--ink-soft);
+   text-decoration: none;
+-  font-weight: 500;
+-  font-size: 0.86rem;
+-  padding: 6px 12px;
+-  border-radius: 7px;
+-  transition: color 0.2s, background 0.2s;
+-}
+-.navLinks a:hover {
+-  color: var(--text);
+-  background: var(--surface2);
++  transition: color 0.2s;
+ }
+-.navLinks a.navActive {
+-  color: var(--accent-light);
++.site-nav a:hover {
++  color: var(--cobalt);
+ }
+ 
+-@media (max-width: 640px) {
+-  .navInner {
+-    justify-content: center;
+-    text-align: center;
++@media (max-width: 560px) {
++  .site-header {
++    padding: 14px 18px;
+   }
+-  .brand {
+-    align-items: center;
++  .site-nav {
++    gap: 14px;
++  }
++  .site-nav a {
++    font-size: 0.66rem;
++    letter-spacing: 0.06em;
++  }
++  .wordmark {
++    font-size: 0.72rem;
++    letter-spacing: 0.1em;
+   }
+ }
+ 
+-/* ── Section headings ── */
+-.section {
+-  margin-top: 96px;
++/* ── Hero ── */
++.hero {
++  padding: 120px 0 96px;
++  border-bottom: 1px solid var(--rule-strong);
+ }
+-.sectionLabel {
+-  display: flex;
+-  align-items: center;
+-  gap: 14px;
+-  margin-bottom: 32px;
++
++.kicker {
++  margin: 0;
++  font-family: var(--mono);
++  font-size: 0.78rem;
++  letter-spacing: 0.18em;
++  text-transform: uppercase;
++  color: var(--cobalt);
+ }
+-.sectionNum {
+-  font-family: var(--font-display);
+-  font-style: italic;
+-  font-size: 0.9rem;
+-  color: var(--accent);
++
++.hero-name {
++  margin: 28px 0 0;
++  font-family: var(--serif);
++  font-weight: 500;
++  font-size: clamp(3.4rem, 11vw, 8.2rem);
++  line-height: 0.96;
++  letter-spacing: -0.03em;
+ }
+-.sectionLabel h2 {
+-  margin: 0;
+-  font-family: var(--font-display);
+-  font-size: 1.7rem;
+-  font-weight: 400;
+-  letter-spacing: 0.005em;
++.hero-line {
++  display: block;
+ }
+-.sectionRule {
+-  flex: 1;
+-  height: 1px;
+-  background: var(--border);
++.hero-line-indent {
++  margin-left: clamp(24px, 8vw, 130px);
+ }
+-
+-/* ── Hero ── */
+-.hero {
+-  padding-top: 96px;
++.hero-line em {
++  font-style: italic;
++  font-weight: 400;
++  color: var(--cobalt);
+ }
+ 
+-.heroStatus {
+-  display: inline-flex;
+-  align-items: center;
+-  gap: 8px;
+-  font-size: 0.82rem;
+-  font-weight: 500;
+-  color: var(--accent-light);
+-  padding: 6px 14px 6px 11px;
+-  border-radius: 999px;
+-  border: 1px solid var(--accent-border);
+-  background: var(--accent-soft);
+-}
+-.statusDot {
+-  width: 6px;
+-  height: 6px;
+-  border-radius: 50%;
+-  background: var(--accent);
++.hero-foot {
++  margin-top: 72px;
++  display: grid;
++  grid-template-columns: 1fr 1.1fr;
++  gap: 48px;
++  align-items: end;
++}
++@media (max-width: 820px) {
++  .hero-foot {
++    grid-template-columns: 1fr;
++    gap: 32px;
++  }
+ }
+ 
+-.heroTitle {
+-  margin: 26px 0 0;
+-  font-family: var(--font-display);
++.hero-tagline {
++  margin: 0;
++  font-family: var(--serif);
++  font-style: italic;
+   font-weight: 400;
+-  font-size: clamp(2.3rem, 5.5vw, 3.7rem);
+-  line-height: 1.12;
+-  letter-spacing: -0.01em;
+-}
+-.heroAccent {
+-  color: var(--accent-light);
++  font-size: clamp(1.3rem, 2.4vw, 1.7rem);
++  line-height: 1.35;
++  max-width: 18ch;
+ }
+ 
+-.lead {
+-  margin: 22px 0 0;
+-  color: var(--muted);
++.hero-lead {
++  margin: 0;
++  font-size: 0.98rem;
+   line-height: 1.75;
+-  max-width: 62ch;
+-  font-size: 1.04rem;
++  color: var(--ink-soft);
++  max-width: 56ch;
+ }
+ 
+-.heroActions {
++.hero-actions {
+   display: flex;
+-  gap: 10px;
+   flex-wrap: wrap;
+-  margin-top: 30px;
++  gap: 10px;
++  margin-top: 26px;
+ }
+ 
+-.heroMeta {
+-  margin: 22px 0 0;
+-  font-size: 0.85rem;
+-  color: var(--dim);
++.hero-meta {
++  margin-top: 56px;
++  display: flex;
++  flex-wrap: wrap;
++  gap: 12px 36px;
++}
++.meta-item {
++  font-family: var(--mono);
++  font-size: 0.74rem;
++  letter-spacing: 0.1em;
++  text-transform: uppercase;
++  color: var(--ink-faint);
++  display: inline-flex;
++  align-items: center;
++  gap: 9px;
++}
++.meta-dot {
++  width: 7px;
++  height: 7px;
++  border-radius: 50%;
++  background: var(--cobalt);
+ }
+ 
+ /* ── Buttons ── */
+-.btnPrimary,
+-.btnGhost {
++.btn {
++  font-family: var(--mono);
++  font-size: 0.74rem;
++  font-weight: 500;
++  letter-spacing: 0.12em;
++  text-transform: uppercase;
+   text-decoration: none;
+-  border-radius: 9px;
+-  padding: 10px 20px;
+-  font-weight: 600;
+-  font-size: 0.88rem;
+-  line-height: 1;
+-  display: inline-flex;
+-  align-items: center;
+-  gap: 6px;
+-  transition: background 0.2s, color 0.2s, border-color 0.2s, transform 0.2s;
++  color: var(--ink);
++  padding: 12px 22px;
++  border: 1px solid var(--rule-strong);
++  border-radius: 999px;
++  transition: background 0.2s, color 0.2s, border-color 0.2s;
+ }
+-.btnPrimary {
+-  background: var(--accent);
+-  color: #15110c;
+-  border: 1px solid transparent;
++.btn:hover {
++  background: var(--ink);
++  color: var(--paper);
+ }
+-.btnPrimary:hover {
+-  background: var(--accent-light);
+-  transform: translateY(-1px);
++.btn-solid {
++  background: var(--ink);
++  color: var(--paper);
+ }
+-.btnGhost {
+-  background: transparent;
+-  color: var(--muted);
+-  border: 1px solid var(--border);
++.btn-solid:hover {
++  background: var(--cobalt);
++  border-color: var(--cobalt);
+ }
+-.btnGhost:hover {
+-  color: var(--text);
+-  border-color: var(--border2);
+-  transform: translateY(-1px);
++
++/* ── Sections ── */
++.section {
++  padding: 88px 0 0;
+ }
+ 
+-/* ── Cards ── */
+-.card {
+-  border: 1px solid var(--border);
+-  background: var(--surface);
+-  border-radius: var(--radius);
+-  padding: 24px;
+-  transition: border-color 0.3s;
++.section-head {
++  display: flex;
++  align-items: baseline;
++  gap: 18px;
++  padding-bottom: 18px;
++  border-bottom: 1px solid var(--rule-strong);
++  margin-bottom: 0;
+ }
+-.card:hover {
+-  border-color: var(--border2);
++.section-index {
++  font-family: var(--mono);
++  font-size: 0.78rem;
++  color: var(--cobalt);
+ }
+-.card h3 {
++.section-title {
+   margin: 0;
+-  font-family: var(--font-display);
+-  font-weight: 400;
+-  font-size: 1.2rem;
++  font-family: var(--serif);
++  font-weight: 500;
++  font-size: clamp(1.8rem, 3.4vw, 2.6rem);
++  letter-spacing: -0.01em;
+ }
+ 
+-/* ── Shared list / pill styles ── */
+-.bullets {
+-  margin: 14px 0 0;
+-  padding-left: 18px;
+-  color: var(--muted);
+-  line-height: 1.65;
+-}
+-.bullets li {
+-  margin: 6px 0;
+-  font-size: 0.92rem;
++/* shared tech / meta line */
++.tag-line {
++  margin: 18px 0 0;
++  font-family: var(--mono);
++  font-size: 0.74rem;
++  line-height: 1.9;
++  letter-spacing: 0.04em;
++  color: var(--ink-faint);
++  text-transform: uppercase;
+ }
+-.bullets li::marker {
+-  color: var(--accent);
++
++/* ── Experience ── */
++.work-item {
++  display: grid;
++  grid-template-columns: 220px 1fr;
++  gap: 32px;
++  padding: 40px 0;
++  border-bottom: 1px solid var(--rule);
++}
++@media (max-width: 720px) {
++  .work-item {
++    grid-template-columns: 1fr;
++    gap: 14px;
++  }
+ }
+ 
+-.pills {
++.work-when {
+   display: flex;
+-  flex-wrap: wrap;
++  flex-direction: column;
+   gap: 6px;
+-  margin-top: 14px;
+-}
+-.pill {
+-  font-size: 0.76rem;
+-  padding: 5px 11px;
+-  border-radius: 999px;
+-  border: 1px solid var(--border);
+-  background: var(--surface);
+-  color: var(--muted);
+-  line-height: 1;
+-  font-weight: 500;
+-  transition: border-color 0.2s, color 0.2s;
++  font-family: var(--mono);
++  font-size: 0.78rem;
++  letter-spacing: 0.06em;
++  color: var(--ink-soft);
++  padding-top: 6px;
+ }
+-.pill:hover {
+-  border-color: var(--accent-border);
+-  color: var(--text);
++.work-where {
++  color: var(--ink-faint);
+ }
+-
+-/* ── Experience timeline ── */
+-.timeline {
+-  position: relative;
+-  display: flex;
+-  flex-direction: column;
+-  gap: 36px;
+-  padding-left: 4px;
++@media (max-width: 720px) {
++  .work-when {
++    flex-direction: row;
++    gap: 18px;
++  }
+ }
+ 
+-.timelineItem {
+-  position: relative;
+-  display: flex;
+-  gap: 22px;
++.work-role {
++  margin: 0;
++  font-family: var(--serif);
++  font-weight: 500;
++  font-size: 1.55rem;
++  letter-spacing: -0.01em;
+ }
+-.timelineMarker {
+-  position: relative;
+-  flex-shrink: 0;
+-  width: 11px;
+-  margin-top: 8px;
++.work-company {
++  margin: 6px 0 0;
++  font-size: 0.95rem;
++  font-weight: 500;
++  color: var(--cobalt);
+ }
+-.timelineMarker::before {
+-  content: "";
+-  position: absolute;
+-  top: 0;
+-  left: 0;
+-  width: 11px;
+-  height: 11px;
+-  border-radius: 50%;
+-  border: 2px solid var(--accent);
+-  background: var(--bg);
++.work-bullets {
++  margin: 18px 0 0;
++  padding-left: 20px;
++  color: var(--ink-soft);
++  line-height: 1.7;
+ }
+-.timelineMarker::after {
+-  content: "";
+-  position: absolute;
+-  top: 18px;
+-  bottom: -44px;
+-  left: 5px;
+-  width: 1px;
+-  background: var(--border);
++.work-bullets li {
++  margin: 7px 0;
++  font-size: 0.94rem;
+ }
+-.timelineItem:last-child .timelineMarker::after {
+-  display: none;
++.work-bullets li::marker {
++  color: var(--cobalt);
+ }
+ 
+-.timelineContent {
+-  flex: 1;
+-  min-width: 0;
+-  padding-bottom: 4px;
++/* ── Projects ── */
++.proj-row {
++  display: grid;
++  grid-template-columns: 1fr 1.6fr;
++  gap: 32px;
++  padding: 40px 0;
++  border-bottom: 1px solid var(--rule);
++  transition: background 0.25s;
++}
++@media (max-width: 720px) {
++  .proj-row {
++    grid-template-columns: 1fr;
++    gap: 12px;
++  }
+ }
+ 
+-.xpHead {
+-  display: flex;
+-  justify-content: space-between;
+-  align-items: baseline;
+-  gap: 16px;
+-  flex-wrap: wrap;
+-}
+-.xpRole {
++.proj-name {
+   margin: 0;
+-  font-family: var(--font-display);
+-  font-weight: 400;
+-  font-size: 1.22rem;
+-}
+-.xpCompany {
+-  margin-top: 4px;
+-  color: var(--accent-light);
++  font-family: var(--serif);
+   font-weight: 500;
+-  font-size: 0.92rem;
+-}
+-.xpMeta {
+-  display: flex;
+-  flex-direction: column;
+-  align-items: flex-end;
+-  gap: 2px;
+-  font-size: 0.82rem;
+-  color: var(--dim);
+-  white-space: nowrap;
++  font-size: clamp(1.7rem, 3vw, 2.3rem);
++  letter-spacing: -0.015em;
++  line-height: 1.1;
+ }
+-@media (max-width: 600px) {
+-  .xpMeta {
+-    align-items: flex-start;
+-    flex-direction: row;
+-    gap: 12px;
+-  }
++.proj-name a {
++  color: inherit;
++  text-decoration: none;
++  transition: color 0.2s;
+ }
+-
+-/* ── Projects ── */
+-.projGrid {
+-  display: grid;
+-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+-  gap: 16px;
++.proj-name a:hover {
++  color: var(--cobalt);
+ }
+-
+-.projCard {
+-  display: flex;
+-  flex-direction: column;
++.proj-arrow {
++  font-size: 0.6em;
++  vertical-align: 0.35em;
++  color: var(--cobalt);
+ }
+-.projTop {
+-  display: flex;
+-  justify-content: space-between;
+-  align-items: baseline;
+-  gap: 12px;
++.proj-date {
++  display: block;
++  margin-top: 12px;
++  font-family: var(--mono);
++  font-size: 0.74rem;
++  letter-spacing: 0.1em;
++  text-transform: uppercase;
++  color: var(--ink-faint);
+ }
+-.projDate {
+-  font-size: 0.78rem;
+-  color: var(--dim);
+-  white-space: nowrap;
++
++.proj-desc {
++  margin: 0;
++  font-size: 0.98rem;
++  line-height: 1.7;
++  color: var(--ink);
+ }
+-.projDesc {
+-  margin: 12px 0 0;
+-  color: var(--muted);
+-  font-size: 0.92rem;
++.proj-bullets {
++  margin: 14px 0 0;
++  padding-left: 20px;
++  color: var(--ink-soft);
+   line-height: 1.65;
+ }
+-.projBottom {
+-  display: flex;
+-  justify-content: space-between;
+-  align-items: flex-end;
+-  gap: 12px;
+-  margin-top: auto;
+-  padding-top: 10px;
+-}
+-.projLink {
+-  color: var(--accent-light);
+-  text-decoration: none;
+-  font-weight: 600;
+-  font-size: 0.85rem;
+-  white-space: nowrap;
+-  transition: color 0.2s;
++.proj-bullets li {
++  margin: 5px 0;
++  font-size: 0.9rem;
+ }
+-.projLink:hover {
+-  color: var(--text);
++.proj-bullets li::marker {
++  color: var(--cobalt);
+ }
+ 
+ /* ── Skills ── */
+-.skillsGrid {
++.skills-grid {
+   display: grid;
+-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+-  gap: 16px;
++  grid-template-columns: repeat(3, 1fr);
++  gap: 0;
+ }
+-.skillCard h3 {
+-  font-size: 1.05rem;
++@media (max-width: 720px) {
++  .skills-grid {
++    grid-template-columns: 1fr;
++  }
++}
++
++.skills-col {
++  padding: 36px 28px 36px 0;
++  border-bottom: 1px solid var(--rule);
++}
++
++.skills-group {
++  margin: 0 0 18px;
++  font-family: var(--mono);
++  font-weight: 500;
++  font-size: 0.76rem;
++  letter-spacing: 0.14em;
++  text-transform: uppercase;
++  color: var(--cobalt);
++}
++.skills-list {
++  margin: 0;
++  padding: 0;
++  list-style: none;
++}
++.skills-list li {
++  padding: 9px 0;
++  border-bottom: 1px solid var(--rule);
++  font-size: 0.94rem;
++  color: var(--ink-soft);
++}
++.skills-list li:last-child {
++  border-bottom: 0;
+ }
+ 
+ /* ── Education ── */
+-.eduTop {
++.edu {
+   display: flex;
+   justify-content: space-between;
+   align-items: flex-start;
+-  gap: 20px;
++  gap: 32px;
+   flex-wrap: wrap;
++  padding: 40px 0;
++  border-bottom: 1px solid var(--rule);
+ }
+-.eduDegree {
+-  margin: 6px 0 0;
+-  color: var(--muted);
+-  font-size: 0.94rem;
++.edu-school {
++  margin: 0;
++  font-family: var(--serif);
++  font-weight: 500;
++  font-size: 1.55rem;
++  letter-spacing: -0.01em;
++}
++.edu-degree {
++  margin: 8px 0 0;
++  font-size: 0.95rem;
++  color: var(--ink-soft);
++}
++.edu-courses {
++  max-width: 60ch;
+ }
+-.eduSide {
++.edu-side {
+   display: flex;
+   flex-direction: column;
+   align-items: flex-end;
+-  gap: 8px;
+-  flex-shrink: 0;
+-}
+-.eduDate {
+-  font-size: 0.84rem;
+-  color: var(--dim);
+-}
+-.eduGpa {
+-  font-weight: 600;
+-  font-size: 0.84rem;
+-  color: var(--accent-light);
+-  padding: 4px 12px;
+-  border-radius: 6px;
+-  border: 1px solid var(--accent-border);
+-  background: var(--accent-soft);
+-}
+-.eduCourses {
+-  margin-top: 20px;
+-  padding-top: 18px;
+-  border-top: 1px solid var(--border);
+-}
+-.eduCoursesLabel {
+-  display: block;
+-  font-size: 0.74rem;
+-  font-weight: 600;
+-  color: var(--dim);
++  gap: 10px;
++  font-family: var(--mono);
++  font-size: 0.78rem;
++  letter-spacing: 0.06em;
++  color: var(--ink-soft);
++  padding-top: 8px;
++}
++.edu-gpa {
++  color: var(--paper);
++  background: var(--cobalt);
++  padding: 5px 12px;
++  border-radius: 999px;
++  font-size: 0.72rem;
++  letter-spacing: 0.1em;
+   text-transform: uppercase;
+-  letter-spacing: 0.09em;
++}
++@media (max-width: 720px) {
++  .edu-side {
++    align-items: flex-start;
++    flex-direction: row;
++    align-items: center;
++  }
+ }
+ 
+ /* ── Contact ── */
+-.contactCard {
+-  border: 1px solid var(--border);
+-  background: var(--surface);
+-  border-radius: var(--radius);
+-  padding: 44px 32px;
+-  text-align: center;
+-}
+-.contactHeading {
++.contact {
++  padding: 48px 0 0;
++}
++.contact-pitch {
+   margin: 0;
+-  font-family: var(--font-display);
++  font-family: var(--serif);
++  font-style: italic;
+   font-weight: 400;
+-  font-size: 1.7rem;
++  font-size: clamp(1.25rem, 2.4vw, 1.6rem);
++  line-height: 1.4;
++  max-width: 34ch;
++  color: var(--ink);
++}
++.contact-email {
++  display: inline-block;
++  margin-top: 32px;
++  font-family: var(--serif);
++  font-weight: 500;
++  font-size: clamp(1.7rem, 5.2vw, 3.6rem);
++  letter-spacing: -0.02em;
++  color: var(--cobalt);
++  text-decoration: none;
++  border-bottom: 2px solid transparent;
++  transition: border-color 0.2s, color 0.2s;
++  word-break: break-all;
+ }
+-.contactSub {
+-  margin: 14px auto 0;
+-  color: var(--muted);
+-  line-height: 1.7;
+-  max-width: 52ch;
++.contact-email:hover {
++  border-bottom-color: var(--cobalt);
+ }
+-.contactActions {
++
++.contact-links {
++  margin-top: 40px;
+   display: flex;
+-  justify-content: center;
+   flex-wrap: wrap;
+-  gap: 10px;
+-  margin-top: 26px;
++  gap: 28px;
+ }
+-
+-/* ── Footer ── */
+-.footer {
+-  margin-top: 96px;
+-  padding-top: 24px;
+-  border-top: 1px solid var(--border);
+-  display: flex;
+-  align-items: center;
+-  justify-content: center;
+-  gap: 8px;
+-  color: var(--dim);
+-  font-size: 0.82rem;
++.contact-links a {
++  font-family: var(--mono);
++  font-size: 0.76rem;
++  letter-spacing: 0.12em;
++  text-transform: uppercase;
++  color: var(--ink-soft);
++  text-decoration: none;
++  transition: color 0.2s;
+ }
+-.footerDot {
+-  opacity: 0.4;
++.contact-links a:hover {
++  color: var(--cobalt);
+ }
+ 
+-/* ── Scrollbar & selection ── */
+-::-webkit-scrollbar {
+-  width: 8px;
+-}
+-::-webkit-scrollbar-track {
+-  background: var(--bg);
+-}
+-::-webkit-scrollbar-thumb {
+-  background: rgba(255, 255, 255, 0.1);
+-  border-radius: 99px;
++/* ── Footer ── */
++.site-footer {
++  margin-top: 96px;
++  border-top: 1px solid var(--rule-strong);
+ }
+-::selection {
+-  background: rgba(207, 154, 108, 0.3);
+-  color: var(--text);
++.footer-inner {
++  display: flex;
++  justify-content: space-between;
++  flex-wrap: wrap;
++  gap: 12px;
++  padding-top: 22px;
++  padding-bottom: 28px;
++  font-family: var(--mono);
++  font-size: 0.72rem;
++  letter-spacing: 0.1em;
++  text-transform: uppercase;
++  color: var(--ink-faint);
+ }
+diff --git a/src/App.jsx b/src/App.jsx
+index 81d9cf8..9445c95 100644
+--- a/src/App.jsx
++++ b/src/App.jsx
+@@ -5,7 +5,7 @@ import "./App.css";
+ import { profile, experience, projects, skills, education } from "./data";
+ 
+ /* ───── Reveal-on-scroll ───── */
+-function useReveal(threshold = 0.12) {
++function useReveal(threshold = 0.1) {
+   const ref = useRef(null);
+   const [visible, setVisible] = useState(false);
+   useEffect(() => {
+@@ -31,7 +31,7 @@ function Reveal({ children, delay = 0 }) {
+   return (
+     <div
+       ref={ref}
+-      className={`reveal ${visible ? "revealed" : ""}`}
++      className={`reveal ${visible ? "is-visible" : ""}`}
+       style={{ transitionDelay: `${delay}ms` }}
+     >
+       {children}
+@@ -39,280 +39,247 @@ function Reveal({ children, delay = 0 }) {
+   );
+ }
+ 
+-/* ───── Small pieces ───── */
+-function Pill({ children }) {
+-  return <span className="pill">{children}</span>;
+-}
+-
+-function SectionHeading({ num, title }) {
++/* ───── Section frame ───── */
++function Section({ id, index, title, children }) {
+   return (
+-    <Reveal>
+-      <div className="sectionLabel">
+-        <span className="sectionNum">{num}</span>
+-        <h2>{title}</h2>
+-        <span className="sectionRule" aria-hidden="true" />
+-      </div>
+-    </Reveal>
++    <section id={id} className="section">
++      <Reveal>
++        <header className="section-head">
++          <span className="section-index">{index}</span>
++          <h2 className="section-title">{title}</h2>
++        </header>
++      </Reveal>
++      {children}
++    </section>
+   );
+ }
+ 
+-/* ───── Nav ───── */
++/* ───── Header ───── */
+ const navLinks = [
+-  { id: "experience", label: "Experience" },
++  { id: "work", label: "Work" },
+   { id: "projects", label: "Projects" },
+   { id: "skills", label: "Skills" },
+-  { id: "education", label: "Education" },
+   { id: "contact", label: "Contact" },
+ ];
+ 
+-function Nav() {
++function SiteHeader() {
+   const [scrolled, setScrolled] = useState(false);
+-  const [active, setActive] = useState("");
+-
+   useEffect(() => {
+-    const onScroll = () => {
+-      setScrolled(window.scrollY > 40);
+-      const ids = [...navLinks.map((l) => l.id)].reverse();
+-      for (const id of ids) {
+-        const el = document.getElementById(id);
+-        if (el && el.getBoundingClientRect().top < 200) {
+-          setActive(id);
+-          return;
+-        }
+-      }
+-      setActive("");
+-    };
++    const onScroll = () => setScrolled(window.scrollY > 10);
+     window.addEventListener("scroll", onScroll, { passive: true });
+     return () => window.removeEventListener("scroll", onScroll);
+   }, []);
+ 
+   return (
+-    <header className={`nav ${scrolled ? "navScrolled" : ""}`}>
+-      <div className="navInner">
+-        <a className="brand" href="#top">
+-          <span className="brandName">{profile.name}</span>
+-          <span className="brandSub">{profile.title} · {profile.school}</span>
+-        </a>
+-        <nav className="navLinks" aria-label="Primary navigation">
+-          {navLinks.map((l) => (
+-            <a key={l.id} href={`#${l.id}`} className={active === l.id ? "navActive" : ""}>
+-              {l.label}
+-            </a>
+-          ))}
+-        </nav>
+-      </div>
++    <header className={`site-header ${scrolled ? "is-scrolled" : ""}`}>
++      <a className="wordmark" href="#top">{profile.name}</a>
++      <nav className="site-nav" aria-label="Primary">
++        {navLinks.map((l) => (
++          <a key={l.id} href={`#${l.id}`}>{l.label}</a>
++        ))}
++      </nav>
+     </header>
+   );
+ }
+ 
+-/* ───── Sections ───── */
++/* ───── Hero ───── */
+ function Hero() {
++  const [first, ...rest] = profile.name.split(" ");
+   return (
+     <section className="hero">
+-      <div className="heroStatus">
+-        <span className="statusDot" />
+-        {profile.status}
+-      </div>
+-      <h1 className="heroTitle">
+-        {profile.headline[0]}
+-        <br />
+-        <span className="heroAccent">{profile.headline[1]}</span>
++      <p className="kicker">
++        {profile.title} — {profile.school}
++      </p>
++      <h1 className="hero-name">
++        <span className="hero-line">{first}</span>
++        <span className="hero-line hero-line-indent">
++          <em>{rest.join(" ")}</em>
++        </span>
+       </h1>
+-      <p className="lead">{profile.lead}</p>
+-      <div className="heroActions">
+-        <a className="btnPrimary" href={profile.resume} target="_blank" rel="noopener noreferrer">
+-          Resume
+-        </a>
+-        <a className="btnGhost" href={profile.github} target="_blank" rel="noopener noreferrer">
+-          GitHub
+-        </a>
+-        <a className="btnGhost" href={profile.linkedin} target="_blank" rel="noopener noreferrer">
+-          LinkedIn
+-        </a>
+-        <a className="btnGhost" href={`mailto:${profile.email}`}>
+-          Email
+-        </a>
++      <div className="hero-foot">
++        <p className="hero-tagline">
++          {profile.headline[0]} {profile.headline[1]}
++        </p>
++        <div className="hero-side">
++          <p className="hero-lead">{profile.lead}</p>
++          <div className="hero-actions">
++            <a className="btn btn-solid" href={profile.resume} target="_blank" rel="noopener noreferrer">
++              Resume ↗
++            </a>
++            <a className="btn" href={profile.github} target="_blank" rel="noopener noreferrer">
++              GitHub
++            </a>
++            <a className="btn" href={profile.linkedin} target="_blank" rel="noopener noreferrer">
++              LinkedIn
++            </a>
++          </div>
++        </div>
++      </div>
++      <div className="hero-meta">
++        <span className="meta-item">
++          <span className="meta-dot" aria-hidden="true" /> {profile.status}
++        </span>
++        <span className="meta-item">{profile.location}</span>
+       </div>
+-      <p className="heroMeta">{profile.location}</p>
+     </section>
+   );
+ }
+ 
+-function Experience() {
++/* ───── Experience ───── */
++function Work() {
+   return (
+-    <section id="experience" className="section">
+-      <SectionHeading num="01" title="Experience" />
+-      <div className="timeline">
++    <Section id="work" index="01" title="Experience">
++      <div className="work-list">
+         {experience.map((job, i) => (
+-          <Reveal key={job.company + job.period} delay={i * 80}>
+-            <article className="timelineItem">
+-              <div className="timelineMarker" aria-hidden="true" />
+-              <div className="timelineContent">
+-                <div className="xpHead">
+-                  <div>
+-                    <h3 className="xpRole">{job.role}</h3>
+-                    <div className="xpCompany">{job.company}</div>
+-                  </div>
+-                  <div className="xpMeta">
+-                    <span>{job.period}</span>
+-                    <span>{job.location}</span>
+-                  </div>
+-                </div>
+-                <ul className="bullets">
++          <Reveal key={job.company + job.period} delay={i * 60}>
++            <article className="work-item">
++              <div className="work-when">
++                <span>{job.period}</span>
++                <span className="work-where">{job.location}</span>
++              </div>
++              <div className="work-body">
++                <h3 className="work-role">{job.role}</h3>
++                <p className="work-company">{job.company}</p>
++                <ul className="work-bullets">
+                   {job.bullets.map((b, j) => (
+                     <li key={j}>{b}</li>
+                   ))}
+                 </ul>
+-                <div className="pills">
+-                  {job.tech.map((t) => (
+-                    <Pill key={t}>{t}</Pill>
+-                  ))}
+-                </div>
++                <p className="tag-line">{job.tech.join(" · ")}</p>
+               </div>
+             </article>
+           </Reveal>
+         ))}
+       </div>
+-    </section>
++    </Section>
+   );
+ }
+ 
++/* ───── Projects ───── */
+ function Projects() {
+   return (
+-    <section id="projects" className="section">
+-      <SectionHeading num="02" title="Projects" />
+-      <div className="projGrid">
++    <Section id="projects" index="02" title="Projects">
++      <div className="proj-list">
+         {projects.map((p, i) => (
+-          <Reveal key={p.name} delay={i * 80}>
+-            <article className="card projCard">
+-              <div className="projTop">
+-                <h3>{p.name}</h3>
+-                <span className="projDate">{p.date}</span>
++          <Reveal key={p.name} delay={i * 60}>
++            <article className="proj-row">
++              <div className="proj-name-col">
++                <h3 className="proj-name">
++                  {p.link ? (
++                    <a href={p.link} target="_blank" rel="noopener noreferrer">
++                      {p.name} <span className="proj-arrow">↗</span>
++                    </a>
++                  ) : (
++                    p.name
++                  )}
++                </h3>
++                <span className="proj-date">{p.date}</span>
+               </div>
+-              <p className="projDesc">{p.description}</p>
+-              <ul className="bullets">
+-                {p.bullets.map((b, j) => (
+-                  <li key={j}>{b}</li>
+-                ))}
+-              </ul>
+-              <div className="projBottom">
+-                <div className="pills">
+-                  {p.tech.map((t) => (
+-                    <Pill key={t}>{t}</Pill>
++              <div className="proj-body">
++                <p className="proj-desc">{p.description}</p>
++                <ul className="proj-bullets">
++                  {p.bullets.map((b, j) => (
++                    <li key={j}>{b}</li>
+                   ))}
+-                </div>
+-                {p.link && (
+-                  <a className="projLink" href={p.link} target="_blank" rel="noopener noreferrer">
+-                    View →
+-                  </a>
+-                )}
++                </ul>
++                <p className="tag-line">{p.tech.join(" · ")}</p>
+               </div>
+             </article>
+           </Reveal>
+         ))}
+       </div>
+-    </section>
++    </Section>
+   );
+ }
+ 
++/* ───── Skills ───── */
+ function Skills() {
+   return (
+-    <section id="skills" className="section">
+-      <SectionHeading num="03" title="Skills" />
+-      <div className="skillsGrid">
++    <Section id="skills" index="03" title="Skills">
++      <div className="skills-grid">
+         {Object.entries(skills).map(([group, items], i) => (
+-          <Reveal key={group} delay={i * 80}>
+-            <div className="card skillCard">
+-              <h3>{group}</h3>
+-              <div className="pills">
++          <Reveal key={group} delay={i * 60}>
++            <div className="skills-col">
++              <h3 className="skills-group">{group}</h3>
++              <ul className="skills-list">
+                 {items.map((s) => (
+-                  <Pill key={s}>{s}</Pill>
++                  <li key={s}>{s}</li>
+                 ))}
+-              </div>
++              </ul>
+             </div>
+           </Reveal>
+         ))}
+       </div>
+-    </section>
++    </Section>
+   );
+ }
+ 
++/* ───── Education ───── */
+ function Education() {
+   return (
+-    <section id="education" className="section">
+-      <SectionHeading num="04" title="Education" />
++    <Section id="education" index="04" title="Education">
+       <Reveal>
+-        <div className="card eduCard">
+-          <div className="eduTop">
+-            <div>
+-              <h3>{education.school}</h3>
+-              <p className="eduDegree">{education.degree}</p>
+-            </div>
+-            <div className="eduSide">
+-              <span className="eduDate">{education.period}</span>
+-              <span className="eduGpa">{education.gpa}</span>
+-            </div>
++        <div className="edu">
++          <div className="edu-main">
++            <h3 className="edu-school">{education.school}</h3>
++            <p className="edu-degree">{education.degree}</p>
++            <p className="tag-line edu-courses">
++              {education.coursework.join(" · ")}
++            </p>
+           </div>
+-          <div className="eduCourses">
+-            <span className="eduCoursesLabel">Relevant Coursework</span>
+-            <div className="pills">
+-              {education.coursework.map((c) => (
+-                <Pill key={c}>{c}</Pill>
+-              ))}
+-            </div>
++          <div className="edu-side">
++            <span>{education.period}</span>
++            <span className="edu-gpa">{education.gpa}</span>
+           </div>
+         </div>
+       </Reveal>
+-    </section>
++    </Section>
+   );
+ }
+ 
++/* ───── Contact ───── */
+ function Contact() {
+   return (
+-    <section id="contact" className="section">
+-      <SectionHeading num="05" title="Contact" />
++    <Section id="contact" index="05" title="Contact">
+       <Reveal>
+-        <div className="contactCard">
+-          <h3 className="contactHeading">Let's build something together.</h3>
+-          <p className="contactSub">
+-            I'm open to engineering roles where I can build real systems across full-stack,
+-            backend, and applied AI. References available on request.
++        <div className="contact">
++          <p className="contact-pitch">
++            Open to engineering roles across full-stack, backend, and applied
++            AI. If you're building something interesting —
+           </p>
+-          <div className="contactActions">
+-            <a className="btnPrimary" href={`mailto:${profile.email}?subject=Let's%20connect`}>
+-              Email me
+-            </a>
+-            <a className="btnGhost" href={profile.github} target="_blank" rel="noopener noreferrer">
+-              GitHub
+-            </a>
+-            <a className="btnGhost" href={profile.linkedin} target="_blank" rel="noopener noreferrer">
+-              LinkedIn
+-            </a>
++          <a className="contact-email" href={`mailto:${profile.email}?subject=Let's%20connect`}>
++            {profile.email}
++          </a>
++          <div className="contact-links">
++            <a href={profile.github} target="_blank" rel="noopener noreferrer">GitHub</a>
++            <a href={profile.linkedin} target="_blank" rel="noopener noreferrer">LinkedIn</a>
++            <a href={profile.resume} target="_blank" rel="noopener noreferrer">Resume</a>
+           </div>
+         </div>
+       </Reveal>
+-    </section>
++    </Section>
+   );
+ }
+ 
+ /* ───── App ───── */
+ export default function App() {
+   return (
+-    <div className="app">
+-      <Nav />
+-      <main id="top" className="container">
++    <div className="page" id="top">
++      <SiteHeader />
++      <main className="frame">
+         <Hero />
+-        <Experience />
++        <Work />
+         <Projects />
+         <Skills />
+         <Education />
+         <Contact />
+-        <footer className="footer">
+-          <span>© {new Date().getFullYear()} {profile.name}</span>
+-          <span className="footerDot">·</span>
+-          <span>Built with React</span>
+-        </footer>
+       </main>
++      <footer className="site-footer">
++        <div className="frame footer-inner">
++          <span>© {new Date().getFullYear()} {profile.name}</span>
++          <span>{profile.location.split("—")[0].trim()}</span>
++        </div>
++      </footer>
+     </div>
+   );
+ }
+diff --git a/src/index.css b/src/index.css
+index 95ca6ef..89a79c1 100644
+--- a/src/index.css
++++ b/src/index.css
+@@ -1,14 +1,14 @@
+ /* index.css — global resets & fonts */
+-@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@400;500;600;700&display=swap');
++@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&family=Space+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+ 
+ *, *::before, *::after { box-sizing: border-box; }
+-html { scroll-behavior: smooth; scroll-padding-top: 80px; }
++html { scroll-behavior: smooth; scroll-padding-top: 90px; }
+ body {
+   margin: 0;
+-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
++  font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+   -webkit-font-smoothing: antialiased;
+   text-rendering: optimizeLegibility;
+-  background: #0d0d11;
+-  color: #ebe9e4;
++  background: #f5f1ea;
++  color: #181512;
+ }
+ #root { min-height: 100vh; }
+-- 
+2.43.0
+
